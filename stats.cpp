@@ -1,5 +1,15 @@
 #include "stats.h"
 
+Player_stats::Player_stats()
+{
+     Strength = 0;
+    Dexterity = 0;
+    Constitution = 0;
+    Inteligence = 0;
+    Wisdom = 0;
+    Charisma = 0;
+}
+
 Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch)
 {
     Strength = s;

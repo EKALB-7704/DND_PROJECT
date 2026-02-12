@@ -9,6 +9,7 @@
                 "-g",
                 "${workspaceFolder}\\main.cpp",
                 "${workspaceFolder}\\stats.cpp",
+                "${workspaceFolder}\\Character.cpp",
                 "-o",
                 "${workspaceFolder}\\DND_PROJECT.exe"
             ],
