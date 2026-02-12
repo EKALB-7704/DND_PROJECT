@@ -1,5 +1,15 @@
 #include "stats.h"
 
+Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch)
+{
+    Strength = s;
+    Dexterity = d;
+    Constitution = c;
+    Inteligence = i;
+    Wisdom = w;
+    Charisma = ch;
+}
+
 void Player_stats::setAbility(int AS, int Ability)
 {
     if(AS <= 20 && AS > 0)
@@ -35,7 +45,7 @@ void Player_stats::setAbility(int AS, int Ability)
         }
     }
     else 
-    cout << "Ability score must be between 1 and 20";
+    cout << "Ability score must be between 1 and 20" << endl;
 }
 
 int Player_stats::getAbility(int Ability)
