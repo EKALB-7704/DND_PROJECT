@@ -67,7 +67,6 @@ int Player_stats::getAbility(int Ability)
         break;
 
     default:
-        
         return 0;
     }
 }
