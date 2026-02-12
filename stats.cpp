@@ -2,35 +2,40 @@
 
 void Player_stats::setAbility(int AS, int Ability)
 {
-    switch (Ability)
+    if(AS <= 20 && AS > 0)
     {
-    case 1:
-        Strength = AS;
-        break;
+        switch (Ability)
+        {
+        case 1:
+            Strength = AS;
+            break;
 
-    case 2:
-        Dexterity = AS;
-        break;
+        case 2:
+            Dexterity = AS;
+            break;
 
-    case 3:
-        Constitution = AS;
-        break;
+        case 3:
+            Constitution = AS;
+            break;
 
-    case 4:
-        Inteligence = AS;
-        break;
+        case 4:
+            Inteligence = AS;
+            break;
 
-    case 5:
-        Wisdom = AS;
-        break;
+        case 5:
+            Wisdom = AS;
+            break;
 
-    case 6:
-        Charisma = AS;
-        break;
+        case 6:
+            Charisma = AS;
+            break;
 
-    default:
-        cout << "Not an ability";
+        default:
+            cout << "Not an ability";
+        }
     }
+    else 
+    cout << "Ability score must be between 1 and 20";
 }
 
 int Player_stats::getAbility(int Ability)
