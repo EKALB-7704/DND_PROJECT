@@ -80,3 +80,11 @@ int Player_stats::getAbility(int Ability)
         return 0;
     }
 }
+
+void Player_stats::displayAbilityScores()
+{
+    for (int i = 1; i <=6; i++ )
+    {
+        cout << getAbility(i) << endl;
+    }
+}

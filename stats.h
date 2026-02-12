@@ -21,6 +21,7 @@ class Player_stats
     Player_stats(int s, int d, int c, int i, int w, int ch);
     void setAbility(int AS, int Ability);
     int getAbility(int Ability);
+    void displayAbilityScores();
 
 
 };
