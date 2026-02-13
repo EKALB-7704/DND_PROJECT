@@ -9,6 +9,8 @@ and aims to replicate it as close as possible.
 
 4. Code to track feats, racial traits, skills.
 
+5. Add race to character header and constructor.
+
 This list is a rough guide to how the different aspects of a character should be split up and is subject to change
 as the project developes.
 
