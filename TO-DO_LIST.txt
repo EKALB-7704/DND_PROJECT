@@ -1,0 +1,14 @@
+This is the to do list for features that will be added to the project. The project is modelled after a DND character sheet 
+and aims to replicate it as close as possible.
+
+1. Code to track ability scores, bonuses, proficiencys, initiative, inspiration. 
+
+2. Code to track equipment, weapons, items, tools.
+
+3. Code to track spells, spell slots.
+
+4. Code to track feats, racial traits, skills.
+
+This list is a rough guide to how the different aspects of a character should be split up and is subject to change
+as the project developes.
+
