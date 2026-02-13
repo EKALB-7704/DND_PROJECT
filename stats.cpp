@@ -10,6 +10,8 @@ Player_stats::Player_stats()
     Charisma = 0;
 }
 
+
+
 Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch)
 {
     Strength = s;
@@ -95,6 +97,7 @@ void Player_stats::displayAbilityScores()
 {
     for (int i = 1; i <=6; i++ )
     {
-        cout << getAbility(i) << endl;
+        
+        cout << Ability_scores[i - 1] << getAbility(i) << endl;
     }
 }

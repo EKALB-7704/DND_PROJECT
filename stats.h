@@ -13,6 +13,7 @@ class Player_stats
 {
     private:
     int Strength, Dexterity, Constitution, Inteligence, Wisdom, Charisma;
+    string Ability_scores[6] = {"Strength: ", "Dexterity: ", "Constitution: ", "Intelligence: ", "Wisdom: ", "Charisma: "};
 
 
 
