@@ -9,9 +9,10 @@ Character::Character()
     Level = 1;
 }
 
-Character::Character(string name, int age, int weight, int level, Player_stats AS)
+Character::Character(string name,string char_class,string race, int age, int weight, int level, Player_stats AS)
 {
     Name = name;
+    Class = char_class;
     Age = age;
     Weight = weight;
     Level = level;
@@ -21,6 +22,16 @@ Character::Character(string name, int age, int weight, int level, Player_stats A
 void Character::setCharName(string n)
 {
     Name = n;
+}
+
+void Character::setCharClass(string c)
+{
+    Class = c;
+}
+
+void Character::setRace(string r)
+{
+    Race = r;
 }
 
 void Character::setAge(int a)
@@ -43,6 +54,16 @@ string Character::getCharName()
     return Name;
 }
 
+string Character::getCharClass()
+{
+    return Class;
+}
+
+string Character::getRace()
+{
+    return Race;
+}
+
 int Character::getAge()
 {
     return Age;
@@ -60,7 +81,9 @@ int Character::getLevel()
 
 void Character::getDetails()
 {
-    cout << "Name:" << getCharName() << endl;
+    cout << "Name: " << getCharName() << endl;
+    cout << "Class: " << getCharClass() << endl;
+    cout << "Race: " << getRace() << endl;
     cout << "Age: "<< getAge() << endl;
     cout << "Weight: " << getWeight() << endl;
     cout << "Level: " << getLevel() << endl;

@@ -10,8 +10,6 @@ Player_stats::Player_stats()
     Charisma = 0;
 }
 
-
-
 Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch)
 {
     Strength = s;

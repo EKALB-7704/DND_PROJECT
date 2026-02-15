@@ -24,7 +24,7 @@ class Player_stats
     int getAbility(int Ability);
     void displayAbilityScores();
 
-    // NOTE make function to cycle through string array with stats to denote what each stat is!!!!!
+    
 
 
 };
