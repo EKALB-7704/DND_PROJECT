@@ -102,6 +102,6 @@ void Character::getDetails()
 void Character::getStats()
 
 {
-    setStatObj(getStatObj());
+     
     Character_stats.displayAbilityScores();
 }

@@ -35,7 +35,7 @@ stat_1.setAbility(26, 2); // Check for improper changing
 
 
 char_1.getDetails();
-char_1.setStatObj(stat_1);
+//char_1.setStatObj(stat_1);
 char_1.getStats(); // Display all stats via the character objects
 
 
