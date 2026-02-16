@@ -11,7 +11,7 @@ and aims to replicate it as close as possible.
 
 5. Add race to character header and constructor.
 
-6. Improve(FIX) AS modifier functions 
+6. Improve(FIX) AS modifier functions [Done] 
 
 7. Add function to auto update stat object assigned to character object.
 
