@@ -10,7 +10,7 @@ Player_stats::Player_stats()
     Charisma = 0;
 }
 
-Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch)
+Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch, int in, int p)
 {
     Strength = s;
     Dexterity = d;
@@ -18,6 +18,8 @@ Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch)
     Inteligence = i;
     Wisdom = w;
     Charisma = ch;
+    Initiative = in;
+    Proficiency = p;
 }
 
 void Player_stats::setAbility(int AS, int Ability)
@@ -56,6 +58,16 @@ void Player_stats::setAbility(int AS, int Ability)
     }
     else 
     cout << "Ability score must be between 1 and 20" << endl;
+}
+
+void Player_stats::setProficiency(int p)
+{
+    Proficiency = p;
+}
+
+void Player_stats::setInitiative(int in)
+{
+    Initiative = in;
 }
 
 int Player_stats::getAbility(int Ability)
@@ -145,6 +157,16 @@ int Player_stats::getAbilityModifier(int a)
 
 }
 
+int Player_stats::getProficiency()
+{
+    return Proficiency;
+}
+
+int Player_stats::getInitiative()
+{
+    return Initiative;
+}
+
 void Player_stats::displayAbilityScores()
 {
     for (int i = 1; i <=6; i++ )
@@ -152,4 +174,8 @@ void Player_stats::displayAbilityScores()
         
         cout << Ability_scores[i - 1] << getAbility(i) << "(" << getAbilityModifier(i) << ")" << endl;
     }
+
+    cout << "Initiative: " << getInitiative() <<  endl;
+    cout << "Proficiency: " << getProficiency() << endl;
 }
+

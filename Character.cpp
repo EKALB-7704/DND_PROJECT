@@ -49,6 +49,11 @@ void Character::setLevel(int l)
     Level = l;
 }
 
+void Character::setStatObj(Player_stats stat)
+{
+    Character_stats = stat;
+}
+
 string Character::getCharName()
 {
     return Name;
@@ -79,6 +84,11 @@ int Character::getLevel()
     return Level;
 }
 
+Player_stats Character::getStatObj()
+{
+    return Character_stats;
+}
+
 void Character::getDetails()
 {
     cout << "Name: " << getCharName() << endl;
@@ -92,5 +102,6 @@ void Character::getDetails()
 void Character::getStats()
 
 {
+    setStatObj(getStatObj());
     Character_stats.displayAbilityScores();
 }
