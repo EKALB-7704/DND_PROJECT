@@ -23,20 +23,20 @@ char_1.setRace("Orc");
 char_1.setAge(20);
 char_1.setWeight(80);
 char_1.setLevel(5);
-stat_1.setInitiative(2);
-stat_1.setProficiency(3);
+char_1.getStatObj().setInitiative(2);
+char_1.getStatObj().setProficiency(3);
 
 
 
 
-stat_1.setAbility(18, 1); // Check for proper changing 
+char_1.getStatObj().setAbility(18, 1); // Check for proper changing 
 
 stat_1.setAbility(26, 2); // Check for improper changing  
 
 
 char_1.getDetails();
 //char_1.setStatObj(stat_1);
-char_1.getStats(); // Display all stats via the character objects
+char_1.getStatObj().displayAbilityScores(); // Display all stats via the character objects
 
 
 

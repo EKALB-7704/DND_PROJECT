@@ -45,7 +45,7 @@ class Character
     int getAge();
     int getWeight();
     int getLevel();
-    Player_stats getStatObj();
+    Player_stats& getStatObj();
 
     void getDetails();
     void getStats();

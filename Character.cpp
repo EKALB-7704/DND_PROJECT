@@ -84,7 +84,7 @@ int Character::getLevel()
     return Level;
 }
 
-Player_stats Character::getStatObj()
+Player_stats& Character::getStatObj()
 {
     return Character_stats;
 }
