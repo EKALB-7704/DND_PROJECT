@@ -91,11 +91,65 @@ int Player_stats::getAbility(int Ability)
     }
 }
 
+int Player_stats::getAbilityModifier(int a)
+{
+    int Ab_mod = 0;
+    int Ab_check = getAbility(a);
+    if (Ab_check == 20)
+    {
+         Ab_mod = 5;
+    }
+    else if (Ab_check == 19 || Ab_check == 18)
+    {
+         Ab_mod = 4;
+    }
+    else if (Ab_check == 17 || Ab_check == 16)
+    {
+         Ab_mod = 3;
+    }
+    else if (Ab_check == 15 || Ab_check == 14)
+    {
+        Ab_mod = 2;
+    }
+    else if (Ab_check == 13 || Ab_check == 12)
+    {
+        Ab_mod = 1;
+    }
+    else if (Ab_check == 11 || Ab_check == 10)
+    {
+        Ab_mod = 0;
+    }
+    else if (Ab_check == 9 || Ab_check == 8)
+    {
+        Ab_mod = -1;
+    }
+    else if (Ab_check == 7 || Ab_check == 6)
+    {
+        Ab_mod = -2;
+    }
+    else if (Ab_check == 5 || Ab_check == 4)
+    {
+        Ab_mod = -3;
+    }
+    else if (Ab_check == 3 || Ab_check == 2)
+    {
+        Ab_mod = -2;
+    }
+    else if (Ab_check == 1)
+    {
+        Ab_mod = -1;
+    }
+    return Ab_mod;
+
+
+
+}
+
 void Player_stats::displayAbilityScores()
 {
     for (int i = 1; i <=6; i++ )
     {
         
-        cout << Ability_scores[i - 1] << getAbility(i) << endl;
+        cout << Ability_scores[i - 1] << getAbility(i) << "(" << getAbilityModifier(i) << ")" << endl;
     }
 }

@@ -11,6 +11,8 @@ and aims to replicate it as close as possible.
 
 5. Add race to character header and constructor.
 
+6. Improve(FIX) AS modifier functions 
+
 This list is a rough guide to how the different aspects of a character should be split up and is subject to change
 as the project developes.
 

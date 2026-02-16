@@ -19,6 +19,7 @@ Character char_1("Paul","Warlock","Human",15,0,1, stat_1); // assign stat object
 // Test setters and getters for character details
 char_1.setCharName("Thrikna");
 char_1.setCharClass("Fighter");
+char_1.setRace("Orc");
 char_1.setAge(20);
 char_1.setWeight(80);
 char_1.setLevel(5);
