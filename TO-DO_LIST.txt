@@ -13,7 +13,8 @@ and aims to replicate it as close as possible.
 
 6. Improve(FIX) AS modifier functions [Done] 
 
-7. Add function to auto update stat object assigned to character object.
+7. Add function to auto update stat object assigned to character object. [Done]
+    (function now refers to actual object not just a copy of an object)
 
 This list is a rough guide to how the different aspects of a character should be split up and is subject to change
 as the project developes.
