@@ -1,7 +1,12 @@
 This is the to do list for features that will be added to the project. The project is modelled after a DND character sheet 
 and aims to replicate it as close as possible.
 
-1. Code to track ability scores, bonuses, proficiencys, initiative, inspiration. 
+
+CURRENT STATE OF PROJECT:
+main priority is testing and developement of all required functions. once all aspects are tested and implemented, we will begin
+work on ui and user input functions.
+
+1. Code to track ability scores, bonuses, proficiencys, initiative, inspiration. [Done]
 
 2. Code to track equipment, weapons, items, tools.
 
@@ -9,7 +14,7 @@ and aims to replicate it as close as possible.
 
 4. Code to track feats, racial traits, skills.
 
-5. Add race to character header and constructor.
+5. Add race to character header and constructor. [Done]
 
 6. Improve(FIX) AS modifier functions [Done] 
 
