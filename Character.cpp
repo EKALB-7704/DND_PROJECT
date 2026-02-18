@@ -1,6 +1,8 @@
 #include "Character.h"
 #include "stats.h"
 
+
+//Constructor definitions
 Character::Character()
 {
     Name = "";
@@ -19,6 +21,8 @@ Character::Character(string name,string char_class,string race, int age, int wei
     Character_stats = AS;
 }
 
+
+//Setter definitions
 void Character::setCharName(string n)
 {
     Name = n;
@@ -54,6 +58,8 @@ void Character::setStatObj(Player_stats stat)
     Character_stats = stat;
 }
 
+
+//Getter definitions
 string Character::getCharName()
 {
     return Name;

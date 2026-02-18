@@ -1,5 +1,7 @@
 #include "stats.h"
 
+
+//Constructor definitions
 Player_stats::Player_stats()
 {
      Strength = 0;
@@ -22,6 +24,7 @@ Player_stats::Player_stats(int s, int d, int c, int i, int w, int ch, int in, in
     Proficiency = p;
 }
 
+//Setter definitions
 void Player_stats::setAbility(int AS, int Ability)
 {
     if(AS <= 20 && AS > 0)
@@ -70,6 +73,8 @@ void Player_stats::setInitiative(int in)
     Initiative = in;
 }
 
+
+//Getter definitions
 int Player_stats::getAbility(int Ability)
 {
     switch (Ability)
@@ -105,7 +110,7 @@ int Player_stats::getAbility(int Ability)
 
 int Player_stats::getAbilityModifier(int a)
 {
-    int Ab_mod = 0;
+    int Ab_mod;
     int Ab_check = getAbility(a);
     Ab_mod = (Ab_check - 10)/2; 
     return Ab_mod;
@@ -124,6 +129,7 @@ int Player_stats::getInitiative()
     return Initiative;
 }
 
+//Display definitions
 void Player_stats::displayAbilityScores()
 {
     for (int i = 1; i <=6; i++ )

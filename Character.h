@@ -15,6 +15,8 @@ using namespace std;
 class Character
 {
     private:
+
+    // Member variables
     string Name;
     string Class;
     string Race; 
@@ -27,10 +29,12 @@ class Character
     
 
     public:
+
+    // Constructors
     Character();
     Character(string name, string char_class,string race, int age, int weight,int level, Player_stats AS); // Set up character object with an assigned stats object
 
-    // Setters and Getters
+    // Setters 
     void setCharName(string n);
     void setCharClass(string c);
     void setRace(string r);
@@ -39,6 +43,7 @@ class Character
     void setLevel(int level);
     void setStatObj(Player_stats stat);
 
+    // Getters
     string getCharName();
     string getCharClass();
     string getRace();
@@ -46,7 +51,6 @@ class Character
     int getWeight();
     int getLevel();
     Player_stats& getStatObj();
-
     void getDetails();
     void getStats();
 
