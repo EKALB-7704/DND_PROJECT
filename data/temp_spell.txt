@@ -1,12 +1,1 @@
-1
-Hex
-Enchantment
-Damage Effect
-1
-Bonus Action
-100 ft
-V
-10 minutes
-None
-More Damage
-END_SPELL
+0

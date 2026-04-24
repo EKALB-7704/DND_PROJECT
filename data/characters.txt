@@ -1,1 +1,83 @@
+1
+Mitzy
+Half Elf
+Warlock
+Entertainer
+Chaotic Neutral
+3 22 67
+5 5 0
+d12 3
+14 11 16 14 17 14 0 3
 0
+WALLET
+0 0 0 0 0
+SPELLBOOK
+0
+SPELLSLOTS
+0
+FEATURES
+0
+0
+18
+Acrobatics
+DEX
+0
+Animal Handling
+WIS
+0
+Arcana
+INT
+0
+Athletics
+STR
+0
+Deception
+CHA
+0
+History
+INT
+0
+Insight
+WIS
+0
+Intimidation
+CHA
+0
+Investigation
+INT
+0
+Medicine
+WIS
+0
+Nature
+INT
+0
+Perception
+WIS
+0
+Performance
+CHA
+0
+Persuasion
+CHA
+0
+Religion
+INT
+0
+Sleight of Hand
+DEX
+0
+Stealth
+DEX
+0
+Survival
+WIS
+0
+0
+0
+0
+0
+0
+0
+EQUIPPED
+-1 -1
