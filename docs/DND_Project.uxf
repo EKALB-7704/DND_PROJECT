@@ -1,15 +1,15 @@
-<diagram program="umletino" version="15.1"><zoom_level>4</zoom_level><element><id>UMLClass</id><coordinates><x>324</x><y>788</y><w>100</w><h>24</h></coordinates><panel_attributes>bg=light_gray
+<diagram program="umletino" version="15.1"><zoom_level>4</zoom_level><element><id>UMLClass</id><coordinates><x>100</x><y>820</y><w>100</w><h>24</h></coordinates><panel_attributes>bg=light_gray
 &lt;&lt;external&gt;&gt;
-std::runtime_error</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>324</x><y>832</y><w>108</w><h>32</h></coordinates><panel_attributes>DndException
+std::runtime_error</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>100</x><y>864</y><w>108</w><h>32</h></coordinates><panel_attributes>DndException
 --
 --
-+ DndException(msg: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>224</x><y>908</y><w>88</w><h>24</h></coordinates><panel_attributes>SaveError
++ DndException(msg: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>940</y><w>88</w><h>24</h></coordinates><panel_attributes>SaveError
 --
 --
-+ SaveError(msg: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>332</x><y>912</y><w>88</w><h>24</h></coordinates><panel_attributes>LoadError
++ SaveError(msg: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>108</x><y>944</y><w>88</w><h>24</h></coordinates><panel_attributes>LoadError
 --
 --
-+ LoadError(msg: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>832</x><y>656</y><w>132</w><h>152</h></coordinates><panel_attributes>&lt;&lt;abstract&gt;&gt;
++ LoadError(msg: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>608</x><y>688</y><w>132</w><h>152</h></coordinates><panel_attributes>&lt;&lt;abstract&gt;&gt;
 Item
 --
 # name: string
@@ -25,7 +25,7 @@ Item
 + save(file: ofstream&amp;)
 + saveData()
 + loadData()
-+ {static} loadFromFile(file: ifstream&amp;): Item*</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>652</x><y>876</y><w>124</w><h>108</h></coordinates><panel_attributes>Weapon
++ {static} loadFromFile(file: ifstream&amp;): Item*</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>428</x><y>908</y><w>124</w><h>108</h></coordinates><panel_attributes>Weapon
 --
 - damageDice: string
 - damageType: string
@@ -37,7 +37,7 @@ Item
 + getItemTag(): string
 + display()
 + saveData()
-+ loadData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>836</x><y>872</y><w>124</w><h>104</h></coordinates><panel_attributes>Armor
++ loadData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>612</x><y>904</y><w>124</w><h>104</h></coordinates><panel_attributes>Armor
 --
 - armorType: string
 - baseAC: int
@@ -48,14 +48,14 @@ Item
 + getItemTag(): string
 + display()
 + saveData()
-+ loadData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1004</x><y>920</y><w>100</w><h>60</h></coordinates><panel_attributes>Gear
++ loadData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>780</x><y>952</y><w>100</w><h>60</h></coordinates><panel_attributes>Gear
 --
 (inherits Item fields)
 --
 + getItemTag(): string
 + display()
 + saveData()
-+ loadData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>364</x><y>576</y><w>128</w><h>160</h></coordinates><panel_attributes>Spell
++ loadData()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>140</x><y>608</y><w>128</w><h>160</h></coordinates><panel_attributes>Spell
 --
 - Spell_Name: string
 - Spell_Level: int
@@ -70,7 +70,7 @@ Item
 --
 + DisplaySpellProperties()
 + saveToFile(outFile: ofstream&amp;)
-+ loadFromFile(inFile: ifstream&amp;)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1024</x><y>488</y><w>128</w><h>124</h></coordinates><panel_attributes>DiceRoller
++ loadFromFile(inFile: ifstream&amp;)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>800</x><y>520</y><w>128</w><h>124</h></coordinates><panel_attributes>DiceRoller
 --
 - rng: mt19937
 --
@@ -85,13 +85,13 @@ Item
 Normal | Advantage | Disadvantage
 --
 &lt;&lt;struct&gt;&gt; D20RollResult
-firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1020</x><y>652</y><w>120</w><h>52</h></coordinates><panel_attributes>Colour_manager
+firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>796</x><y>684</y><w>120</w><h>52</h></coordinates><panel_attributes>Colour_manager
 --
 --
 + Colour_manager()
 + setColour(colour_code: int)
 + DisplayColourcodes()
-+ ChangeColour()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>832</x><y>536</y><w>124</w><h>76</h></coordinates><panel_attributes>Inventory
++ ChangeColour()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>608</x><y>568</y><w>124</w><h>76</h></coordinates><panel_attributes>Inventory
 --
 - items: vector&lt;unique_ptr&lt;Item&gt;&gt;
 --
@@ -101,7 +101,7 @@ firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes>
 + size(): int
 + display()
 + save(file: ofstream&amp;)
-+ load(file: ifstream&amp;)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>432</x><y>400</y><w>128</w><h>80</h></coordinates><panel_attributes>Spellbook
++ load(file: ifstream&amp;)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>208</x><y>432</y><w>128</w><h>80</h></coordinates><panel_attributes>Spellbook
 --
 - knownSpells: vector&lt;Spell&gt;
 --
@@ -112,7 +112,7 @@ firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes>
 + getAllSpells(): vector&lt;Spell&gt;
 + displayAllSpells()
 + saveSpellbook(filename: string)
-+ loadSpellbook(filename: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>604</x><y>520</y><w>128</w><h>92</h></coordinates><panel_attributes>SpellSlots
++ loadSpellbook(filename: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>380</x><y>552</y><w>128</w><h>92</h></coordinates><panel_attributes>SpellSlots
 --
 - maxSlots: map&lt;int, int&gt;
 - currentSlots: map&lt;int, int&gt;
@@ -125,7 +125,7 @@ firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes>
 + hasAnySlots(): bool
 + displaySlots()
 + save(file: ofstream&amp;)
-+ load(file: ifstream&amp;)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>616</x><y>672</y><w>128</w><h>92</h></coordinates><panel_attributes>Wallet
++ load(file: ifstream&amp;)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>392</x><y>704</y><w>128</w><h>92</h></coordinates><panel_attributes>Wallet
 --
 - copper: int
 - silver: int
@@ -140,7 +140,7 @@ firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes>
 + adjustPlatinum(amount: int)
 + getCopper(), getSilver()...
 + display()
-+ save(), load()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>800</x><y>0</y><w>160</w><h>284</h></coordinates><panel_attributes>Character
++ save(), load()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>576</x><y>32</y><w>160</w><h>284</h></coordinates><panel_attributes>Character
 --
 - name, race, characterClass: string
 - background, alignment: string
@@ -176,7 +176,7 @@ firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes>
 + toggleInspiration()
 + getPassivePerception(): int
 + saveToDirectory(path: string)
-+ {static} loadFromDirectory(path: string): Character</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1044</x><y>240</y><w>144</w><h>204</h></coordinates><panel_attributes>CharacterFeatures
++ {static} loadFromDirectory(path: string): Character</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>820</x><y>272</y><w>144</w><h>204</h></coordinates><panel_attributes>CharacterFeatures
 --
 - feats: vector&lt;string&gt;
 - racialTraits: vector&lt;string&gt;
@@ -205,7 +205,7 @@ firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes>
 --
 &lt;&lt;enum&gt;&gt; SkillRank: None | Proficient | Expertise
 &lt;&lt;struct&gt;&gt; SkillEntry: name, ability: string; rank: SkillRank
-&lt;&lt;struct&gt;&gt; SaveEntry: ability: string; proficient: bool</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>800</x><y>300</y><w>160</w><h>144</h></coordinates><panel_attributes>CharacterManager
+&lt;&lt;struct&gt;&gt; SaveEntry: ability: string; proficient: bool</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>576</x><y>332</y><w>160</w><h>144</h></coordinates><panel_attributes>CharacterManager
 --
 - characters: vector&lt;Character&gt;
 - Ability_scores[6]: string
@@ -226,5 +226,5 @@ firstRoll, secondRoll, chosenRoll: int</panel_attributes><additional_attributes>
 + getValidStringInput(): string
 + getValidIntegerInput(): int
 + getValidNameInput(): string
-+ getValidHitDiceInput(): string</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>364</x><y>804</y><w>16</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>15;45;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>360</x><y>864</y><w>16</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;65;22;15</additional_attributes></element><element><id>Relation</id><coordinates><x>368</x><y>864</y><w>60</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>123;65;10;15</additional_attributes></element><element><id>Relation</id><coordinates><x>716</x><y>800</y><w>120</w><h>84</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>290;10;18;185</additional_attributes></element><element><id>Relation</id><coordinates><x>924</x><y>804</y><w>128</w><h>124</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>17;10;300;285</additional_attributes></element><element><id>Relation</id><coordinates><x>888</x><y>604</y><w>24</w><h>60</h></coordinates><panel_attributes>lt=-&gt;
-0..*</panel_attributes><additional_attributes>10;15;35;130</additional_attributes></element><element><id>Relation</id><coordinates><x>672</x><y>600</y><w>168</w><h>80</h></coordinates><panel_attributes>lt=-&gt;</panel_attributes><additional_attributes>400;10;10;180</additional_attributes></element><element><id>Relation</id><coordinates><x>876</x><y>804</y><w>24</w><h>76</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>40;10;10;165</additional_attributes></element><element><id>Relation</id><coordinates><x>0</x><y>0</y><w>76</w><h>12</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>684</x><y>372</y><w>124</w><h>156</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;370;290;10</additional_attributes></element><element><id>Relation</id><coordinates><x>556</x><y>332</y><w>248</w><h>88</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;200;600;10</additional_attributes></element><element><id>Relation</id><coordinates><x>880</x><y>440</y><w>16</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>20;230;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>424</x><y>476</y><w>76</w><h>108</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;250;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>956</x><y>332</y><w>96</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>220;30;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>876</x><y>280</y><w>12</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;50;10;10</additional_attributes></element></diagram>
++ getValidHitDiceInput(): string</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>140</x><y>836</y><w>16</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>15;45;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>136</x><y>896</y><w>16</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;65;22;15</additional_attributes></element><element><id>Relation</id><coordinates><x>144</x><y>896</y><w>60</w><h>32</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>123;65;10;15</additional_attributes></element><element><id>Relation</id><coordinates><x>492</x><y>832</y><w>120</w><h>84</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>290;10;18;185</additional_attributes></element><element><id>Relation</id><coordinates><x>700</x><y>836</y><w>128</w><h>124</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>17;10;300;285</additional_attributes></element><element><id>Relation</id><coordinates><x>664</x><y>636</y><w>24</w><h>60</h></coordinates><panel_attributes>lt=-&gt;
+0..*</panel_attributes><additional_attributes>10;15;35;130</additional_attributes></element><element><id>Relation</id><coordinates><x>448</x><y>632</y><w>168</w><h>80</h></coordinates><panel_attributes>lt=-&gt;</panel_attributes><additional_attributes>400;10;10;180</additional_attributes></element><element><id>Relation</id><coordinates><x>652</x><y>836</y><w>24</w><h>76</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>40;10;10;165</additional_attributes></element><element><id>Relation</id><coordinates><x>460</x><y>404</y><w>124</w><h>156</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;370;290;10</additional_attributes></element><element><id>Relation</id><coordinates><x>332</x><y>364</y><w>248</w><h>88</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;200;600;10</additional_attributes></element><element><id>Relation</id><coordinates><x>656</x><y>472</y><w>16</w><h>100</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>20;230;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>200</x><y>508</y><w>76</w><h>108</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;250;170;10</additional_attributes></element><element><id>Relation</id><coordinates><x>732</x><y>364</y><w>96</w><h>20</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>220;30;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>652</x><y>312</y><w>12</w><h>28</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;50;10;10</additional_attributes></element></diagram>
