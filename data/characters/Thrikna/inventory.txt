@@ -1,1 +1,28 @@
+2
+WEAPON
+Goiras
+Takes whatever form the user wishes
 0
+1
+300000
+Legendary
+1
+1d12
+Slashing
+Martial
+Melee
+None
+30/90
+ARMOR
+Barrier Tattoo
+While not wearing any armour, gain an AC of 18
+10
+1
+300
+Very Rare
+1
+Heavy
+18
+0
+0
+1

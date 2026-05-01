@@ -61,4 +61,8 @@ WIS
 0
 0
 0
-0
+4
+Common
+Orc
+Goblin
+Abyssal
