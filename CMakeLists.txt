@@ -31,6 +31,7 @@ set(LIB_SOURCES
     src/P_SpellSlots.cpp
     src/P_Wallet.cpp
     src/P_Colours.cpp
+    src/P_ConsoleIO.cpp
 )
 
 # Static library that both the game exe and the test exe link against
