@@ -13,6 +13,17 @@ private:
     ConsoleIO& io;
 
     std::vector<Character> characters;
+
+    // Per-section handlers for the character editor. editCharacter() shows the
+    // menu and dispatches; each of these owns one section. Private because they
+    // are only ever reached through editCharacter().
+    void editDetails(Character& c);
+    void editHealth(Character& c);
+    void editAbilityScores(Character& c);
+    void editSpells(Character& c);
+    void manageInventory(Character& c);
+    void manageFeatures(Character& c);
+
     std::string Ability_scores[6] = {"Strength: ", "Dexterity: ", "Constitution: ", "Intelligence: ", "Wisdom: ", "Charisma: "};
     std::string EditCharDetailsArray[9] = {"Name", "Race", "Class", "Background", "Alignment", "Age", "Weight", "Level", "Speed"};
     std::string EditHpArray[7] = {"Max Hp", "Current Hp", "Temporary Hp", "Hit Dice", "Roll Death Save", "Reset Death Saves", "Conditions"};
@@ -42,11 +53,6 @@ public:
     void saveAll() const;
     void loadAll();
     std::vector<std::string> listCharacterNames() const;
-
-
-    // Inventory
-    void manageInventory(Character& c);
-    void manageFeatures(Character& c);
 
 
 };

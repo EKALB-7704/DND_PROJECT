@@ -20,6 +20,13 @@ set(LIB_SOURCES
     src/P_Character.cpp
     src/P_CharacterFeatures.cpp
     src/P_CharacterManager.cpp
+    src/P_ManagerHelpers.cpp
+    src/P_EditDetails.cpp
+    src/P_EditHealth.cpp
+    src/P_EditSpells.cpp
+    src/P_ManageInventory.cpp
+    src/P_ManageFeatures.cpp
+    src/P_GlobalSpells.cpp
     src/P_DiceRoller.cpp
     src/P_Inventory.cpp
     src/P_Item.cpp

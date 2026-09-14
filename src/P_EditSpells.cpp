@@ -1,0 +1,219 @@
+#include "H_CharacterManager.h"
+#include "H_ManagerHelpers.h"
+#include "H_DndExceptions.h"
+#include <iostream>
+
+// Character editor: spellbook, spell slots, and short/long rests.
+
+// Character spellbook, spell slots, and short/long rests.
+void CharacterManager::editSpells(Character& c)
+{
+int spellChoice;
+
+    do {
+        io.os() << "\n=== Character Spells ===\n";
+        io.os() << "1. View Global Spells\n";
+        io.os() << "2. Add Existing Spell to Character\n";
+        io.os() << "3. View Character Spellbook\n";
+        io.os() << "4. Cast Spell\n";
+        io.os() << "5. Edit Spell Slots\n";
+        io.os() << "6. Long Rest\n";
+        io.os() << "7. Short Rest\n";
+        io.os() << "0. Back\n";
+        spellChoice = io.readMenuChoice("Choice: ", 7);
+
+        if (spellChoice == 1)
+        {
+            Spellbook global = ManagerHelpers::loadGlobalSpellbook();
+            const int level = io.readInt("Enter spell level (0-9): ", 0, 9);
+
+            auto spells = global.getSpellsByLevel(level);
+
+            if (spells.empty())
+            {
+                io.os() << "No spells found at that level.\n";
+            }
+            else
+            {
+                for (size_t i = 0; i < spells.size(); i++)
+                {
+                    io.os() << i + 1 << ". "
+                              << spells[i].getSpellName()
+                              << "\n";
+                }
+            }
+        }
+        else if (spellChoice == 2)
+        {
+            Spellbook global = ManagerHelpers::loadGlobalSpellbook();
+
+            const int level = io.readInt("Enter spell level to filter (0-9): ", 0, 9);
+
+            auto spells = global.getSpellsByLevel(level);
+
+            if (spells.empty())
+            {
+                io.os() << "No spells of that level.\n";
+                continue;
+            }
+
+            // Display Spells
+            io.os() << "\n=== Filtered Spells ===\n";
+            for (size_t i = 0; i < spells.size(); i++)
+            {
+                io.os() << i + 1 << ". "
+                        << spells[i].getSpellName()
+                        << " (Level " << spells[i].getSpellLevel() << ")\n";
+            }
+
+            io.os() << "0. Back\n";
+            const int spellNum = io.readMenuChoice("Select spell number: ",
+                                                   static_cast<int>(spells.size()));
+            if (spellNum > 0)
+            {
+                c.getSpellbook().addSpell(spells[spellNum - 1]);
+                io.os() << "Spell added to character!\n";
+            }
+            else
+            {
+                io.os() << "Invalid selection.\n";
+            }
+        }
+        else if (spellChoice == 3)
+        {
+            c.showSpells();
+        }
+        else if (spellChoice == 4)
+        {
+            // Casting uses the character's own known spells, not the global spell list.
+            auto knownSpells = c.getSpellbook().getAllSpells();
+
+            if (knownSpells.empty())
+            {
+                io.os() << "Character has no spells in their spellbook.\n";
+                continue;
+            }
+
+            c.getSpellbook().displaySpellsWithIndex();
+            io.os() << "0. Back\n";
+            const int selectedSpell = io.readMenuChoice(
+                "Select spell number: ", static_cast<int>(knownSpells.size()));
+            if (selectedSpell == 0) continue;
+
+            const Spell& spellToCast = knownSpells[selectedSpell - 1];
+            const int spellLevel = spellToCast.getSpellLevel();
+
+            if (spellLevel == 0)
+            {
+                io.os() << spellToCast.getSpellName() << " is a cantrip and does not use a spell slot.\n";
+                continue;
+            }
+
+            // Allow upcasting, but never casting below the spell's base level.
+            const int slotLevel = io.readInt(
+                "Cast " + spellToCast.getSpellName() + " using what slot level? (" +
+                std::to_string(spellLevel) + "-9): ", spellLevel, 9);
+
+            if (c.getSpellSlots().useSlot(slotLevel))
+            {
+                io.os() << spellToCast.getSpellName() << " cast using a level "
+                          << slotLevel << " slot.\n";
+                io.os() << "Remaining level " << slotLevel << " slots: "
+                          << c.getSpellSlots().getCurrentSlots(slotLevel) << "/"
+                          << c.getSpellSlots().getMaxSlots(slotLevel) << "\n";
+            }
+            else
+            {
+                io.os() << "No level " << slotLevel << " spell slots remaining.\n";
+            }
+        }
+        else if (spellChoice == 5)
+        {
+            int slotEditChoice = -1;
+
+            do
+            {
+                io.os() << "\n=== Edit Spell Slots ===\n";
+                c.getSpellSlots().displaySlots();
+                io.os() << "1. Set max slots for a level\n";
+                io.os() << "2. Set current slots for a level\n";
+                io.os() << "0. Back\n";
+                slotEditChoice = io.readMenuChoice("Choice: ", 2);
+
+                if (slotEditChoice == 1 || slotEditChoice == 2)
+                {
+                    const int slotLevel = io.readInt("Spell level (1-9): ", 1, 9);
+
+                    if (slotEditChoice == 1)
+                    {
+                        const int maxSlots = io.readInt("New max slots: ", 0, 20);
+
+                        c.getSpellSlots().setSlots(slotLevel, maxSlots);
+                        // Explicitly keep zero-max levels at zero current slots.
+                        if (maxSlots == 0)
+                        {
+                            c.getSpellSlots().setCurrentSlots(slotLevel, 0);
+                        }
+                        io.os() << "Max slots updated for level " << slotLevel << ".\n";
+                    }
+                    else
+                    {
+                        // Cannot exceed the max already configured for this level.
+                        const int currentSlots = io.readInt(
+                            "New current slots: ", 0,
+                            c.getSpellSlots().getMaxSlots(slotLevel));
+
+                        c.getSpellSlots().setCurrentSlots(slotLevel, currentSlots);
+                        io.os() << "Current slots updated for level " << slotLevel << ".\n";
+                    }
+                }
+            } while (slotEditChoice != 0);
+        }
+        else if (spellChoice == 6)
+        {
+            c.getSpellSlots().resetSlots();
+            c.setCurrentHP(c.getMaxHP());
+            c.recoverHitDice();
+            io.os() << "Long rest complete. HP, spell slots, and hit dice restored.\n";
+            io.os() << "Hit dice: " << c.getHitDiceNum() << "/" << c.getLevel() << c.getHitDice() << "\n";
+        }
+        else if (spellChoice == 7)
+        {
+            if (ManagerHelpers::isWarlockClass(c))
+            {
+                c.getSpellSlots().resetSlots();
+                io.os() << "Short rest complete. Warlock spell slots restored to full.\n";
+            }
+            else
+            {
+                io.os() << "Short rest complete. Spell slots unchanged for "
+                          << c.getClass() << ".\n";
+            }
+
+            // All classes can spend hit dice during a short rest.
+            io.os() << "Hit dice available: " << c.getHitDiceNum()
+                      << "/" << c.getLevel() << c.getHitDice() << "\n";
+            if (c.getHitDiceNum() > 0 && c.getCurrentHP() < c.getMaxHP())
+            {
+                const int toSpend = io.readInt(
+                    "Spend how many hit dice to recover HP? (0 = No): ",
+                    0, c.getHitDiceNum());
+
+                if (toSpend > 0)
+                {
+                    const int hpGained = io.readInt(
+                        "Enter total HP recovered (roll " + std::to_string(toSpend) +
+                        c.getHitDice() + " + CON modifier per die): ", 0, 100000);
+                    if (hpGained > 0)
+                    {
+                        int newHp = c.getCurrentHP() + hpGained;
+                        c.setCurrentHP(newHp > c.getMaxHP() ? c.getMaxHP() : newHp);
+                    }
+                    c.spendHitDice(toSpend);
+                    io.os() << "HP: " << c.getCurrentHP() << "/" << c.getMaxHP()
+                              << "  Hit dice remaining: " << c.getHitDiceNum() << "\n";
+                }
+            }
+        }
+    } while (spellChoice != 0);
+}
