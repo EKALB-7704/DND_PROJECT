@@ -1,4 +1,4 @@
-#include "H_spells.h"
+#include "H_Spell.h"
 
 //-----------------------------------------------------//
 // Constructors for creating empty spells or fully-filled spell entries.

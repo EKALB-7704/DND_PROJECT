@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "H_spells.h"
+#include "H_Spell.h"
 #include "H_SpellBook.h"
 
 // ── Spell helpers ─────────────────────────────────────────────────────────────

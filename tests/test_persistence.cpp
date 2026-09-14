@@ -7,7 +7,7 @@
 #include "H_Weapon.h"
 #include "H_Armor.h"
 #include "H_Gear.h"
-#include "H_spells.h"
+#include "H_Spell.h"
 #include "H_SpellBook.h"
 #include "H_Character.h"
 

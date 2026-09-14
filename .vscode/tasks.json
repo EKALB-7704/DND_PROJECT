@@ -7,7 +7,9 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "problemMatcher": ["$gcc"],
+            "problemMatcher": [
+                "$gcc"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": false
@@ -21,21 +23,7 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "-I${workspaceFolder}/include",
-                "${workspaceFolder}/src/P_main.cpp",
-                "${workspaceFolder}/src/P_Character.cpp",
-                "${workspaceFolder}/src/P_CharacterFeatures.cpp",
-                "${workspaceFolder}/src/P_CharacterManager.cpp",
-                "${workspaceFolder}/src/P_Inventory.cpp",
-                "${workspaceFolder}/src/P_Item.cpp",
-                "${workspaceFolder}/src/P_Weapon.cpp",
-                "${workspaceFolder}/src/P_Armor.cpp",
-                "${workspaceFolder}/src/P_Gear.cpp",
-                "${workspaceFolder}/src/P_spells.cpp",
-                "${workspaceFolder}/src/P_SpellBook.cpp",
-                "${workspaceFolder}/src/P_SpellSlots.cpp",
-                "${workspaceFolder}/src/P_Wallet.cpp",
-                "${workspaceFolder}/src/P_Colours.cpp",
-                "${workspaceFolder}/src/P_DiceRoller.cpp",
+                "${workspaceFolder}/src/*.cpp",
                 "-o",
                 "${workspaceFolder}/DND_PROJECT"
             ],
@@ -45,21 +33,7 @@
                     "-fdiagnostics-color=always",
                     "-g",
                     "-I${workspaceFolder}/include",
-                    "${workspaceFolder}/src/P_main.cpp",
-                    "${workspaceFolder}/src/P_Character.cpp",
-                    "${workspaceFolder}/src/P_CharacterFeatures.cpp",
-                    "${workspaceFolder}/src/P_CharacterManager.cpp",
-                    "${workspaceFolder}/src/P_Inventory.cpp",
-                    "${workspaceFolder}/src/P_Item.cpp",
-                    "${workspaceFolder}/src/P_Weapon.cpp",
-                    "${workspaceFolder}/src/P_Armor.cpp",
-                    "${workspaceFolder}/src/P_Gear.cpp",
-                    "${workspaceFolder}/src/P_spells.cpp",
-                    "${workspaceFolder}/src/P_SpellBook.cpp",
-                    "${workspaceFolder}/src/P_SpellSlots.cpp",
-                    "${workspaceFolder}/src/P_Wallet.cpp",
-                    "${workspaceFolder}/src/P_Colours.cpp",
-                    "${workspaceFolder}/src/P_DiceRoller.cpp",
+                    "${workspaceFolder}/src/*.cpp",
                     "-o",
                     "${workspaceFolder}\\DND_PROJECT.exe"
                 ]

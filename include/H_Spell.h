@@ -1,5 +1,5 @@
-#ifndef SPELLS_H
-#define SPELLS_H
+#ifndef SPELL_H
+#define SPELL_H
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -63,4 +63,4 @@ class Spell
 
 };
 
-#endif // SPELLS_H
+#endif // SPELL_H

@@ -33,7 +33,7 @@ set(LIB_SOURCES
     src/P_Weapon.cpp
     src/P_Armor.cpp
     src/P_Gear.cpp
-    src/P_spells.cpp
+    src/P_Spell.cpp
     src/P_SpellBook.cpp
     src/P_SpellSlots.cpp
     src/P_Wallet.cpp
