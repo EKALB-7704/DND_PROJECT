@@ -29,7 +29,7 @@ A command-line D&D character management system written in C++. Tracks everything
 DND_PROJECT/
 ├── src/               # Source files; the character editor is split by menu
 │                      # section (P_EditHealth, P_EditSpells, P_ManageInventory,
-│                      # P_ManageFeatures, P_EditDetails, P_GlobalSpells)
+│                      # P_ManageFeatures, P_EditDetails, P_Rest, P_GlobalSpells)
 ├── include/           # Header files and custom exception hierarchy
 ├── tests/             # Google Test unit tests (13 test suites)
 ├── data/
@@ -139,12 +139,10 @@ The codebase cleanup pass is **complete**:
 5. ~~Consistency pass~~ — one header-guard style, PascalCase types, camelCase
    members, filenames matching the type they define
 
-Next up, in order:
-
-- Make the editor submenus behave consistently (Character details and
-  Character health act once and return; the others loop until `0`)
-- Move short/long rest out of the Spells submenu — they change HP and hit
-  dice, not just spell slots
+Since the cleanup, the editor UI has been made consistent: every submenu now
+loops until `0`, and short/long rest moved out of the Spells submenu into their
+own top-level "Rest" entry, since a rest restores HP and hit dice as well as
+spell slots.
 
 Planned features, once the above lands:
 
