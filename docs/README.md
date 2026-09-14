@@ -128,16 +128,23 @@ Thirteen test suites cover the full system:
 
 ## Future Plans
 
-Current focus is a codebase cleanup pass before any new features:
+The codebase cleanup pass is **complete**:
 
-1. ~~Repo hygiene — untrack build artifacts and runtime save data~~ **done**
-2. ~~Consolidate console input behind one validated I/O layer~~ **done** — see
-   `ConsoleIO`; no raw `std::cin` remains in `src/`
-3. ~~Split `CharacterManager` into per-section menu units~~ **done** — eight
-   files, none over 220 lines; `editCharacter` is now a 54-line dispatcher
-4. ~~Add a version header to the character save format, with validation on
-   load~~ **done** — `#DNDCHAR <n>`; headerless files read as v0 and upgrade
-   on next save; out-of-range fields are repaired and reported
+1. ~~Repo hygiene — untrack build artifacts and runtime save data~~
+2. ~~Consolidate console input behind one validated I/O layer~~ (`ConsoleIO`;
+   no raw `std::cin` remains in `src/`)
+3. ~~Split `CharacterManager` into per-section menu units~~ (eight files, none
+   over 220 lines; `editCharacter` is a 54-line dispatcher)
+4. ~~Version every save file, with validation on load~~ (see Data Format)
+5. ~~Consistency pass~~ — one header-guard style, PascalCase types, camelCase
+   members, filenames matching the type they define
+
+Next up, in order:
+
+- Make the editor submenus behave consistently (Character details and
+  Character health act once and return; the others loop until `0`)
+- Move short/long rest out of the Spells submenu — they change HP and hit
+  dice, not just spell slots
 
 Planned features, once the above lands:
 
