@@ -40,25 +40,18 @@ bool isWarlockClass(const Character& character)
     return toLowerCopy(character.getClass()) == "warlock";
 }
 
-D20Mode promptD20Mode()
+D20Mode promptD20Mode(ConsoleIO& io)
 {
-    int modeChoice = 0;
     std::cout << "1. Normal\n";
     std::cout << "2. Advantage\n";
     std::cout << "3. Disadvantage\n";
-    std::cout << "Choice: ";
-    std::cin >> modeChoice;
-
-    if (std::cin.fail() || modeChoice < 1 || modeChoice > 3)
+    // Previously a bad entry silently fell back to Normal; now it re-prompts.
+    switch (io.readInt("Choice: ", 1, 3))
     {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        return D20Mode::Normal;
+        case 2:  return D20Mode::Advantage;
+        case 3:  return D20Mode::Disadvantage;
+        default: return D20Mode::Normal;
     }
-
-    if (modeChoice == 2) return D20Mode::Advantage;
-    if (modeChoice == 3) return D20Mode::Disadvantage;
-    return D20Mode::Normal;
 }
 
 Spellbook loadGlobalSpellbook()
@@ -74,111 +67,44 @@ void saveGlobalSpellbook(const Spellbook& spellbook)
 }
 }
 
+CharacterManager::CharacterManager(ConsoleIO& io) : io(io) {}
+
 void CharacterManager::createCharacter() {
 
-    // Initialize variables
-    std::string name, race, characterClass, background, alignment;
-    int lvl, age, weight;
-    int c_hp, m_hp, t_hp;
-    std::string h_dice;
-    int str, dex, con, intl, wis, cha, init, prof;
+    // Every prompt below re-prompts on bad input rather than falling through
+    // with an unset or out-of-range value.
+    const std::string name           = io.readName("Enter name: ");
+    const std::string race           = io.readText("Enter race: ");
+    const std::string characterClass = io.readText("Enter class: ");
+    const std::string background     = io.readText("Enter background: ");
+    const std::string alignment      = io.readText("Enter alignment: ");
 
+    const int lvl    = io.readInt("Enter level (1-20): ", 1, 20);
+    const int age    = io.readInt("Enter age: ", 0, 100000);
+    const int weight = io.readInt("Enter weight: ", 0, 100000);
+
+    const int m_hp = io.readInt("Enter max health: ", 1, 100000);
+    const int c_hp = m_hp;
+    const int t_hp = io.readInt("Enter temporary health (0 if none): ", 0, 100000);
+
+    const std::string h_dice = io.readHitDice("Enter hit dice (e.g. d6, d8, d12): ");
+
+    // Ability scores, in the fixed STR/DEX/CON/INT/WIS/CHA order.
     int new_AS[6];
-
-    // Get string based information
-    name = getValidNameInput("name");
-    race = getValidStringInput("race");
-    characterClass = getValidStringInput("class");
-    background = getValidStringInput("background");
-    alignment = getValidStringInput("alignment");
-    
-    // Get level
-    bool level_set = false;
-    while (!level_set) {
-        lvl = getValidIntegerInput("level (1-20)");
-        if (lvl >= 1 && lvl <= 20) level_set = true;
-        else { Invalidinput(); std::cout << "Level must be between 1 and 20\n"; }
-    }
-
-    // Get integer based information.
-    age    = getValidIntegerInput("age");
-    weight = getValidIntegerInput("weight");
-    m_hp   = getValidIntegerInput("max health");
-    c_hp   = m_hp; 
-
-    std::cout << "Enter Temporary health (0 if none): ";
-    while (!(std::cin >> t_hp) || t_hp < 0) {
-        Invalidinput();
-        std::cout << "Enter a non-negative integer: ";
-    }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    h_dice = getValidHitDiceInput();
-
-
-    
-    // Get ability scores 
     for (int i = 0; i < 6; i++)
     {
-        int new_score;
-        std::cout << "Enter " << Ability_scores[i];
-        if (std::cin >> new_score && new_score >= 1 && new_score <= 20)
-        {
-            new_AS[i] = new_score;
-        }
-        else
-        {
-            Invalidinput();
-            std::cout << "Ability score must be between 1 and 20, please re-enter!\n";
-            i--;
-        }
+        new_AS[i] = io.readInt("Enter " + Ability_scores[i], 1, 20);
     }
 
-    // Assign new ability scores
-    str = new_AS[0];
-    dex = new_AS[1];
-    con = new_AS[2];
-    intl = new_AS[3];
-    wis = new_AS[4];
-    cha = new_AS[5];
-
-    // Get prof and intitiative
-    bool initiative_set = false;
-    bool proficiency_set = false;
-
-    while (initiative_set == false)
-    {
-    std::cout << "Enter initiative: " ;
-    std::cin >> init;
-        if (std::cin){ initiative_set = true;}
-
-        else 
-        {
-            Invalidinput();
-            std::cout << "Invalid initiative value, please re-enter! " << std::endl;
-            
-        }
-    }
-
-    while (proficiency_set == false)
-    {
-        
-    std::cout << "Enter proficiency: ";
-    std::cin >> prof;
-    if (prof >= 2) // Proficiency bonus is +2 at level one, cannot be lower
-        {proficiency_set = true;}
-
-    else
-        {
-        Invalidinput();
-        std::cout << "Proficiency must be minimum +2, please enter valid value! " << std::endl;
-        
-        }
-    }
-
+    const int init = io.readInt("Enter initiative: ", -10, 20);
+    // Proficiency bonus is +2 at level 1 and never lower; +6 is the level-20 cap.
+    const int prof = io.readInt("Enter proficiency (2-6): ", 2, 6);
 
     // Build character using constructor and place into vector
-    characters.emplace_back(name, race, characterClass, background, alignment, lvl, age, weight, c_hp, m_hp, t_hp, h_dice, str, dex, con, intl, wis, cha, init, prof);
+    characters.emplace_back(name, race, characterClass, background, alignment,
+                            lvl, age, weight, c_hp, m_hp, t_hp, h_dice,
+                            new_AS[0], new_AS[1], new_AS[2],
+                            new_AS[3], new_AS[4], new_AS[5], init, prof);
 
     std::cout << "Character created!\n";
 }
@@ -188,24 +114,27 @@ bool CharacterManager::hasCharacters() const
     return !characters.empty();
 }
 
-void CharacterManager::viewCharacters() const {
-    // Check for characters
+int CharacterManager::selectCharacter(const std::string& prompt) const {
     if (characters.empty()) {
         std::cout << "No characters available.\n";
-        return;
+        return -1;
     }
 
-    // List Characters by name
     std::cout << "\n=== Characters ===\n";
     for (size_t i = 0; i < characters.size(); i++)
         std::cout << i + 1 << ". " << characters[i].getName() << "\n";
-    std::cout << "0. Back\nChoice: ";
+    std::cout << "0. Back\n";
 
-    int choice;
-    std::cin >> choice;
-    if (choice < 1 || choice > static_cast<int>(characters.size())) return;
+    const int choice = io.readMenuChoice(prompt, static_cast<int>(characters.size()));
+    return choice == 0 ? -1 : choice - 1;
+}
+
+void CharacterManager::viewCharacters() const {
+    const int index = selectCharacter("Choice: ");
+    if (index < 0) return;
+
     // Show all details of chosen character
-    characters[choice - 1].display();  
+    characters[index].display();
 }
 
 void CharacterManager::manageGlobalSpells()
@@ -219,26 +148,12 @@ void CharacterManager::manageGlobalSpells()
         std::cout << "2. Add Spell\n";
         std::cout << "3. Edit Spell\n";
         std::cout << "0. Back\n";
-        std::cout << "Choice: ";
-        std::cin >> choice;
-
-        if (std::cin.fail())
-        {
-            Invalidinput();
-            continue;
-        }
+        choice = io.readMenuChoice("Choice: ", 3);
 
         if (choice == 1)
         {
-            int level = 0;
-            std::cout << "Enter spell level: ";
-            std::cin >> level;
-
-            if (std::cin.fail())
-            {
-                Invalidinput();
-                continue;
-            }
+            // Level 0 is cantrips.
+            const int level = io.readInt("Enter spell level (0-9): ", 0, 9);
 
             Spellbook global = loadGlobalSpellbook();
             auto spells = global.getSpellsByLevel(level);
@@ -259,32 +174,18 @@ void CharacterManager::manageGlobalSpells()
         }
         else if (choice == 2)
         {
-            std::string name, type, effect, time, range, comp, duration, save, desc;
-            int level = 0;
-
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-            std::cout << "Spell name: ";
-            std::getline(std::cin, name);
-            std::cout << "Type: ";
-            std::getline(std::cin, type);
-            std::cout << "Effect: ";
-            std::getline(std::cin, effect);
-            std::cout << "Level: ";
-            std::cin >> level;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Cast time: ";
-            std::getline(std::cin, time);
-            std::cout << "Range: ";
-            std::getline(std::cin, range);
-            std::cout << "Components: ";
-            std::getline(std::cin, comp);
-            std::cout << "Duration: ";
-            std::getline(std::cin, duration);
-            std::cout << "Saving throw: ";
-            std::getline(std::cin, save);
-            std::cout << "Description: ";
-            std::getline(std::cin, desc);
+            // Free-form fields use readName (printable, non-blank) so entries
+            // like "1 action" or "60 ft" are accepted.
+            const std::string name     = io.readName("Spell name: ");
+            const std::string type     = io.readName("Type: ");
+            const std::string effect   = io.readName("Effect: ");
+            const int         level    = io.readInt("Level (0-9): ", 0, 9);
+            const std::string time     = io.readName("Cast time: ");
+            const std::string range    = io.readName("Range: ");
+            const std::string comp     = io.readName("Components: ");
+            const std::string duration = io.readName("Duration: ");
+            const std::string save     = io.readName("Saving throw: ");
+            const std::string desc     = io.readName("Description: ");
 
             Spellbook global = loadGlobalSpellbook();
             global.addSpell(Spell(name, type, effect, level, time, range, comp, duration, save, desc));
@@ -303,16 +204,10 @@ void CharacterManager::manageGlobalSpells()
             }
 
             global.displaySpellsWithIndex();
-            std::cout << "Select spell number: ";
-
-            int spellNum = 0;
-            std::cin >> spellNum;
-            if (std::cin.fail() || spellNum < 1 || spellNum > static_cast<int>(spells.size()))
-            {
-                Invalidinput();
-                std::cout << "Invalid spell selection.\n";
-                continue;
-            }
+            std::cout << "0. Back\n";
+            const int spellNum = io.readMenuChoice("Select spell number: ",
+                                                   static_cast<int>(spells.size()));
+            if (spellNum == 0) continue;
 
             Spell spellToEdit = spells[spellNum - 1];
             int editChoice = -1;
@@ -332,81 +227,23 @@ void CharacterManager::manageGlobalSpells()
                 std::cout << "10. Description\n";
                 std::cout << "11. View Spell Details\n";
                 std::cout << "0. Save and Back\n";
-                std::cout << "Choice: ";
-                std::cin >> editChoice;
-
-                if (std::cin.fail())
-                {
-                    Invalidinput();
-                    continue;
-                }
+                editChoice = io.readMenuChoice("Choice: ", 11);
 
                 switch (editChoice)
                 {
-                    case 1:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellName(getValidNameInput("spell name"));
-                        break;
-                    }
-                    case 2:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellType(getValidStringInput("spell type"));
-                        break;
-                    }
-                    case 3:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellEffect(getValidStringInput("spell effect"));
-                        break;
-                    }
-                    case 4:
-                    {
-                        spellToEdit.setSpellLevel(getValidIntegerInput("spell level"));
-                        break;
-                    }
-                    case 5:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellTime(getValidStringInput("cast time"));
-                        break;
-                    }
-                    case 6:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellRange(getValidStringInput("range"));
-                        break;
-                    }
-                    case 7:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellComponents(getValidStringInput("components"));
-                        break;
-                    }
-                    case 8:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellDuration(getValidStringInput("duration"));
-                        break;
-                    }
-                    case 9:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellSavingThrow(getValidStringInput("saving throw"));
-                        break;
-                    }
-                    case 10:
-                    {
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        spellToEdit.setSpellDescription(getValidStringInput("description"));
-                        break;
-                    }
-                    case 11:
-                    {
-                        spellToEdit.DisplaySpellProperties();
-                        break;
-                    }
+                    case 1:  spellToEdit.setSpellName(io.readName("Enter new spell name: ")); break;
+                    case 2:  spellToEdit.setSpellType(io.readName("Enter new spell type: ")); break;
+                    case 3:  spellToEdit.setSpellEffect(io.readName("Enter new spell effect: ")); break;
+                    // Was getValidIntegerInput, which enforced > 0 and so could
+                    // never set a cantrip back to level 0.
+                    case 4:  spellToEdit.setSpellLevel(io.readInt("Enter new spell level (0-9): ", 0, 9)); break;
+                    case 5:  spellToEdit.setSpellTime(io.readName("Enter new cast time: ")); break;
+                    case 6:  spellToEdit.setSpellRange(io.readName("Enter new range: ")); break;
+                    case 7:  spellToEdit.setSpellComponents(io.readName("Enter new components: ")); break;
+                    case 8:  spellToEdit.setSpellDuration(io.readName("Enter new duration: ")); break;
+                    case 9:  spellToEdit.setSpellSavingThrow(io.readName("Enter new saving throw: ")); break;
+                    case 10: spellToEdit.setSpellDescription(io.readName("Enter new description: ")); break;
+                    case 11: spellToEdit.DisplaySpellProperties(); break;
                     case 0:
                     {
                         if (global.updateSpell(static_cast<size_t>(spellNum - 1), spellToEdit))
@@ -416,17 +253,8 @@ void CharacterManager::manageGlobalSpells()
                         }
                         break;
                     }
-                    default:
-                    {
-                        std::cout << "Invalid choice.\n";
-                        break;
-                    }
                 }
             } while (editChoice != 0);
-        }
-        else if (choice != 0)
-        {
-            std::cout << "Invalid choice.\n";
         }
     } while (choice != 0);
 }
@@ -438,31 +266,19 @@ void CharacterManager::editCharacter() {
         return;
     }
 
-    int index;
-    // Displays characters by name by using a for loop to iterate through the vector
-    for (int i = 0; i < static_cast<int>(characters.size()); i++)
-    {
-        std::cout << i + 1 << ". " << characters[i].getName() << std::endl;
-    }
-    
-    std::cout << "Enter character index: ";
-    std::cin >> index;
-
-    if (index < 1 || index > static_cast<int>(characters.size())) {
-        std::cout << "Invalid index.\n";
-        return;
-    }
+    const int index = selectCharacter("Enter character index: ");
+    if (index < 0) return;
 
     // Assigns the character object chose to reference c to apply edits
-    Character& c = characters[index - 1];
+    Character& c = characters[index];
 
     int choice;
 
     // Display edit menu
     do {
         std::cout << "\n=== " << c.getName() << " Editor ===\n";
-        std::cout << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n0. Back \nChoice: ";
-        std::cin >> choice;
+        std::cout << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n0. Back \n";
+        choice = io.readMenuChoice("Choice: ", 6);
 
         if (choice == 1) // Character details
         {
@@ -472,50 +288,48 @@ void CharacterManager::editCharacter() {
             {
                 std::cout << i + 1 << "." << EditCharDetailsArray[i] << std::endl;
             }
-            std::cout << "Choice: ";
-            std::cin >> char_edit_choice;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            char_edit_choice = io.readMenuChoice("Choice: ", 9);
             switch (char_edit_choice)
             {
 
             case 1: //Name
                 {
-                    std::string new_name = getValidNameInput("Name");
+                    std::string new_name = io.readName("Enter new Name: ");
                     c.setName(new_name);
                     break;
                 }
 
             case 2: //Race
                 {
-                    std::string new_race = getValidStringInput("Race");
+                    std::string new_race = io.readText("Enter new Race: ");
                     c.setRace(new_race);
                     break;
                 }
                   
             case 3: //Class
                 {
-                    std::string new_class = getValidStringInput("Class");
+                    std::string new_class = io.readText("Enter new Class: ");
                     c.setClass(new_class);
                     break;
                 }
             
             case 4: //Background
                 {
-                    std::string new_background = getValidStringInput("Background");
+                    std::string new_background = io.readText("Enter new Background: ");
                     c.setBackground(new_background);
                     break;
                     
                 }
             case 5: //Alignment
                 {
-                    std::string new_alignment = getValidStringInput("Alignment");
+                    std::string new_alignment = io.readText("Enter new Alignment: ");
                     c.setAlignment(new_alignment);
                     std::cout << "Alignment set" << std::endl;
                     break;
                 }
             case 6: //Age
                 {
-                    int new_age = getValidIntegerInput("Age");
+                    int new_age = io.readInt("Enter new Age: ", 0, 100000);
                     c.setAge(new_age);
                     std::cout << "New age set" << std::endl;
                     break;
@@ -523,7 +337,7 @@ void CharacterManager::editCharacter() {
 
             case 7: //Weight
                 {
-                    int new_weight = getValidIntegerInput("Weight");
+                    int new_weight = io.readInt("Enter new Weight: ", 0, 100000);
                     c.setWeight(new_weight);
                     std::cout << "New weight set" << std::endl;
                     break;
@@ -531,27 +345,13 @@ void CharacterManager::editCharacter() {
 
             case 8: //Level
                 {
-                    bool level_set = false;
-                    while (level_set == false)
-                    {
-                        int new_level = getValidIntegerInput("Level");
-                        if (new_level >= 1 && new_level <=20)
-                        {
-                            c.setLevel(new_level);
-                            level_set = true;
-                        }
-                        else
-                        {
-                            Invalidinput();
-                            std::cout << "Level must be between 1 and 20" << std::endl;
-                        }
-                    }
+                    c.setLevel(io.readInt("Enter new Level (1-20): ", 1, 20));
                     break;
                 }
 
             case 9: //Speed
                 {
-                    int new_speed = getValidIntegerInput("Speed (ft)");
+                    int new_speed = io.readInt("Enter new Speed (ft): ", 0, 1000);
                     c.setSpeed(new_speed);
                     std::cout << "Speed set to " << new_speed << " ft\n";
                     break;
@@ -570,15 +370,13 @@ void CharacterManager::editCharacter() {
             {
                 std::cout << i + 1 << "." << EditHpArray[i] << std::endl;
             }
-            std::cout << "Choice: ";
-            std::cin >> health_edit_choice;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            health_edit_choice = io.readMenuChoice("Choice: ", 7);
 
             switch(health_edit_choice)
             {
                 case 1: //Max Health
                 {
-                    int new_max_health = getValidIntegerInput("Max health");
+                    int new_max_health = io.readInt("Enter new Max health: ", 1, 100000);
                     int max_hp_diff = c.getMaxHP() - new_max_health; 
               
                     if (new_max_health < c.getMaxHP()) // Check to se if max health is being reduced 
@@ -600,33 +398,23 @@ void CharacterManager::editCharacter() {
                 case 2: //Current Health
                 {
                  
-                    bool current_health_set = false;
-                    while (current_health_set == false)
-                    {
-                        int new_current_health = getValidIntegerInput("Current health");
-                        if (new_current_health <= c.getMaxHP())
-                        {
-                            c.setCurrentHP(new_current_health);
-                            current_health_set = true;
-                        }
-                        else 
-                        {
-                            Invalidinput();
-                            std::cout << "Current health cannot exceed max health (Max health: " << c.getMaxHP() << ")" << std::endl;
-                        }
-                    }
+                    // 0 is a valid current HP (unconscious); the old helper
+                    // enforced > 0 and rejected it.
+                    c.setCurrentHP(io.readInt(
+                        "Enter new Current health (0-" + std::to_string(c.getMaxHP()) + "): ",
+                        0, c.getMaxHP()));
                     break;
                 }
                 case 3: //Temporary Health
                 {
-                    int new_temp_health = getValidIntegerInput("Temporary Heath");
+                    int new_temp_health = io.readInt("Enter new Temporary Heath: ", 0, 100000);
                     c.setTempHP(new_temp_health);
                     std::cout << "New temp health set" << std::endl;
                     break;
                 }
                 case 4: //Hit Dice
                 {
-                    std::string new_hit_dice = getValidHitDiceInput();
+                    std::string new_hit_dice = io.readHitDice("Enter new hit dice (e.g. d6, d8, d12): ");
                     c.setHitDice(new_hit_dice);
                     std::cout << "New hit dice set" << std::endl;
                     break;
@@ -648,13 +436,7 @@ void CharacterManager::editCharacter() {
                     // counts as two failures.
 
                     std::cout << "\n=== Death Save Roll ===\n";
-                    D20Mode mode = promptD20Mode();
-
-                    if (std::cin.fail())
-                    {
-                        std::cout << "Invalid roll mode.\n";
-                        break;
-                    }
+                    const D20Mode mode = promptD20Mode(io);
 
                     DiceRoller roller;
                     const D20RollResult result = roller.rollD20(mode);
@@ -741,19 +523,19 @@ void CharacterManager::editCharacter() {
                         std::cout << "2. Remove Condition\n";
                         std::cout << "3. Clear Conditions\n";
                         std::cout << "0. Back\n";
-                        std::cout << "Choice: ";
-                        std::cin >> condition_choice;
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                        condition_choice = io.readMenuChoice("Choice: ", 3);
 
                         if (condition_choice == 1)
                         {
-                            std::string condition = getValidStringInput("condition");
+                            std::string condition = io.readText("Enter new condition: ");
                             c.addCondition(condition);
                             std::cout << "Condition added.\n";
                         }
                         else if (condition_choice == 2)
                         {
-                            int index = getValidIntegerInput("condition number");
+                            const int index = io.readInt(
+                                "Enter condition number: ", 1,
+                                static_cast<int>(c.getConditions().size()));
                             if (c.removeCondition(index))
                             {
                                 std::cout << "Condition removed.\n";
@@ -791,11 +573,10 @@ void CharacterManager::editCharacter() {
             {
                 std::cout << i + 1 << ". " << Ability_scores[i] << std::endl;
             }
-            int val;
-            int abil;
-            std::cin >> abil;
-            std::cout << "New " << Ability_scores[abil - 1]<< std::endl;
-            std::cin >> val;
+            // abil was previously unvalidated, so a value outside 1-6 indexed
+            // Ability_scores out of bounds.
+            const int abil = io.readInt("Choice: ", 1, 6);
+            const int val  = io.readInt("New " + Ability_scores[abil - 1], 1, 20);
             c.setStats(val, abil);
         }
         else if (choice == 5) // Spells and hsort/long rest
@@ -812,14 +593,12 @@ void CharacterManager::editCharacter() {
                 std::cout << "6. Long Rest\n";
                 std::cout << "7. Short Rest\n";
                 std::cout << "0. Back\n";
-                std::cin >> spellChoice;
+                spellChoice = io.readMenuChoice("Choice: ", 7);
 
                 if (spellChoice == 1)
                 {
                     Spellbook global = loadGlobalSpellbook();
-                    int level;
-                    std::cout << "Enter spell level: ";
-                    std::cin >> level;
+                    const int level = io.readInt("Enter spell level (0-9): ", 0, 9);
 
                     auto spells = global.getSpellsByLevel(level);
 
@@ -841,17 +620,7 @@ void CharacterManager::editCharacter() {
                 {
                     Spellbook global = loadGlobalSpellbook();
 
-                    int level;
-                    std::cout << "Enter spell level to filter (0-9): ";
-                    std::cin >> level;
-
-                    if (std::cin.fail())
-                    {
-                        std::cin.clear();
-                        std::cin.ignore(1000, '\n');
-                        std::cout << "Invalid input.\n";
-                        continue;
-                    }
+                    const int level = io.readInt("Enter spell level to filter (0-9): ", 0, 9);
 
                     auto spells = global.getSpellsByLevel(level);
 
@@ -870,19 +639,10 @@ void CharacterManager::editCharacter() {
                                 << " (Level " << spells[i].getSpellLevel() << ")\n";
                     }
 
-                    int spellNum;
-                    std::cout << "Select spell number (Cantrips are Level 0): ";
-                    std::cin >> spellNum;
-
-                    if (std::cin.fail())
-                    {
-                        std::cin.clear();
-                        std::cin.ignore(1000, '\n');
-                        std::cout << "Invalid input.\n";
-                        continue;
-                    }
-
-                    if (spellNum > 0 && spellNum <= static_cast<int>(spells.size()))
+                    std::cout << "0. Back\n";
+                    const int spellNum = io.readMenuChoice("Select spell number: ",
+                                                           static_cast<int>(spells.size()));
+                    if (spellNum > 0)
                     {
                         c.getSpellbook().addSpell(spells[spellNum - 1]);
                         std::cout << "Spell added to character!\n";
@@ -908,18 +668,10 @@ void CharacterManager::editCharacter() {
                     }
 
                     c.getSpellbook().displaySpellsWithIndex();
-                    std::cout << "Select spell number (Cantrips are Level 0): ";
-
-                    int selectedSpell = 0;
-                    std::cin >> selectedSpell;
-
-                    if (std::cin.fail() || selectedSpell < 1 || selectedSpell > static_cast<int>(knownSpells.size()))
-                    {
-                        std::cin.clear();
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        std::cout << "Invalid spell selection.\n";
-                        continue;
-                    }
+                    std::cout << "0. Back\n";
+                    const int selectedSpell = io.readMenuChoice(
+                        "Select spell number: ", static_cast<int>(knownSpells.size()));
+                    if (selectedSpell == 0) continue;
 
                     const Spell& spellToCast = knownSpells[selectedSpell - 1];
                     const int spellLevel = spellToCast.getSpellLevel();
@@ -931,19 +683,9 @@ void CharacterManager::editCharacter() {
                     }
 
                     // Allow upcasting, but never casting below the spell's base level.
-                    std::cout << "Cast " << spellToCast.getSpellName()
-                              << " using what slot level? (" << spellLevel << "-9): ";
-
-                    int slotLevel = 0;
-                    std::cin >> slotLevel;
-
-                    if (std::cin.fail() || slotLevel < spellLevel || slotLevel > 9)
-                    {
-                        std::cin.clear();
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                        std::cout << "Invalid slot level.\n";
-                        continue;
-                    }
+                    const int slotLevel = io.readInt(
+                        "Cast " + spellToCast.getSpellName() + " using what slot level? (" +
+                        std::to_string(spellLevel) + "-9): ", spellLevel, 9);
 
                     if (c.getSpellSlots().useSlot(slotLevel))
                     {
@@ -969,36 +711,15 @@ void CharacterManager::editCharacter() {
                         std::cout << "1. Set max slots for a level\n";
                         std::cout << "2. Set current slots for a level\n";
                         std::cout << "0. Back\n";
-                        std::cout << "Choice: ";
-                        std::cin >> slotEditChoice;
+                        slotEditChoice = io.readMenuChoice("Choice: ", 2);
 
                         if (slotEditChoice == 1 || slotEditChoice == 2)
                         {
-                            int slotLevel = 0;
-                            std::cout << "Spell level (1-9): ";
-                            std::cin >> slotLevel;
-
-                            if (std::cin.fail() || slotLevel < 1 || slotLevel > 9)
-                            {
-                                std::cin.clear();
-                                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                                std::cout << "Invalid spell level.\n";
-                                continue;
-                            }
+                            const int slotLevel = io.readInt("Spell level (1-9): ", 1, 9);
 
                             if (slotEditChoice == 1)
                             {
-                                int maxSlots = 0;
-                                std::cout << "New max slots: ";
-                                std::cin >> maxSlots;
-
-                                if (std::cin.fail() || maxSlots < 0)
-                                {
-                                    std::cin.clear();
-                                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                                    std::cout << "Invalid slot count.\n";
-                                    continue;
-                                }
+                                const int maxSlots = io.readInt("New max slots: ", 0, 20);
 
                                 c.getSpellSlots().setSlots(slotLevel, maxSlots);
                                 // Explicitly keep zero-max levels at zero current slots.
@@ -1010,17 +731,10 @@ void CharacterManager::editCharacter() {
                             }
                             else
                             {
-                                int currentSlots = 0;
-                                std::cout << "New current slots: ";
-                                std::cin >> currentSlots;
-
-                                if (std::cin.fail() || currentSlots < 0)
-                                {
-                                    std::cin.clear();
-                                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                                    std::cout << "Invalid slot count.\n";
-                                    continue;
-                                }
+                                // Cannot exceed the max already configured for this level.
+                                const int currentSlots = io.readInt(
+                                    "New current slots: ", 0,
+                                    c.getSpellSlots().getMaxSlots(slotLevel));
 
                                 c.getSpellSlots().setCurrentSlots(slotLevel, currentSlots);
                                 std::cout << "Current slots updated for level " << slotLevel << ".\n";
@@ -1054,18 +768,15 @@ void CharacterManager::editCharacter() {
                               << "/" << c.getLevel() << c.getHitDice() << "\n";
                     if (c.getHitDiceNum() > 0 && c.getCurrentHP() < c.getMaxHP())
                     {
-                        std::cout << "Spend hit dice to recover HP? (0 = No): ";
-                        int toSpend = 0;
-                        std::cin >> toSpend;
-                        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                        const int toSpend = io.readInt(
+                            "Spend how many hit dice to recover HP? (0 = No): ",
+                            0, c.getHitDiceNum());
 
-                        if (toSpend > 0 && toSpend <= c.getHitDiceNum())
+                        if (toSpend > 0)
                         {
-                            std::cout << "Enter total HP recovered (roll " << toSpend
-                                      << c.getHitDice() << " + CON modifier per die): ";
-                            int hpGained = 0;
-                            std::cin >> hpGained;
-                            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                            const int hpGained = io.readInt(
+                                "Enter total HP recovered (roll " + std::to_string(toSpend) +
+                                c.getHitDice() + " + CON modifier per die): ", 0, 100000);
                             if (hpGained > 0)
                             {
                                 int newHp = c.getCurrentHP() + hpGained;
@@ -1083,138 +794,15 @@ void CharacterManager::editCharacter() {
         {
             manageFeatures(c);
         }
-        else // Exit edit menu
+        else if (choice == 0)
         {
             std::cout << "Exiting edit menu " << std::endl;
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
     } while (choice != 0);
 }
 
-// Utility methods for getting valid inputs and re-usable error-checking methods
-std::string CharacterManager::getValidStringInput(const std::string& value_to_get)
-{
-    std::string new_input;
-    while (true)
-    {
-        std::cout << "Enter new " << value_to_get << std::endl;
-        std::getline(std::cin, new_input);
-        if (isValidString(new_input))
-        {
-            return new_input;
-        }
-        else
-        {
-            Invalidinput();
-            std::cout << "Invalid " << value_to_get << std::endl;
-        }
-    }
-}
-
-std::string CharacterManager::getValidNameInput(const std::string& value_to_get)
-{
-    std::string new_input;
-    while (true)
-    {
-        std::cout << "Enter new " << value_to_get << std::endl;
-        std::getline(std::cin, new_input);
-        if (isValidName(new_input))
-        {
-            return new_input;
-        }
-        else
-        {
-            Invalidinput();
-            std::cout << "Invalid " << value_to_get << std::endl;
-        }
-    }
-}
-
-
-bool CharacterManager::isValidString(const std::string &input)
-{
-    if (input.empty()) return false;
-    bool hasLetter = false;
-    for (char c : input)
-    {
-        if (!std::isprint(static_cast<unsigned char>(c))) return false;
-        if (std::isalpha(static_cast<unsigned char>(c))) hasLetter = true;
-    }
-    return hasLetter;
-}
-
-bool CharacterManager::isValidName(const std::string &input)
-{
-    if (input.empty()) return false;
-    for (char c : input)
-    {
-        if (!std::isprint(static_cast<unsigned char>(c))) return false;
-    }
-    // Reject strings that are only whitespace
-    for (char c : input)
-    {
-        if (!std::isspace(static_cast<unsigned char>(c))) return true;
-    }
-    return false;
-}
-
-bool CharacterManager::isValidHitDice(const std::string& input)
-{
-    // Must start with 'd' and be followed by at least one digit (e.g. d6, d12, d100)
-    if (input.size() < 2 || input[0] != 'd') return false;
-    for (size_t i = 1; i < input.size(); i++)
-    {
-        if (!std::isdigit(input[i])) return false;
-    }
-    return true;
-}
-
-std::string CharacterManager::getValidHitDiceInput()
-{
-    std::string new_input;
-    while (true)
-    {
-        std::cout << "Enter new Hit Dice (e.g. d6, d8, d12): " << std::endl;
-        std::getline(std::cin, new_input);
-        if (isValidHitDice(new_input))
-        {
-            return new_input;
-        }
-        else
-        {
-            Invalidinput();
-            std::cout << "Hit Dice must be in the format dN (e.g. d12)" << std::endl;
-        }
-    }
-}
-
-int CharacterManager::getValidIntegerInput(const std::string& value_to_get)
-{
-    int new_input;
-    while (true)
-    {
-        std::cout << "Enter new " << value_to_get << ": ";
-        if (std::cin >> new_input && new_input > 0)
-        {
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            return new_input;
-        }
-        Invalidinput();
-        std::cout << value_to_get << " must be a positive integer greater than 0\n";
-    }
-}
-
-void CharacterManager::Invalidinput()
-{
-    std::cout << "Not a valid Input!" << std::endl;
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-}
 // Save/Load functions
-
 void CharacterManager::saveCharacter(const Character& c) const {
     namespace fs = std::filesystem;
     fs::path dir = fs::path("data") / "characters" / c.getName();
@@ -1300,54 +888,42 @@ void CharacterManager::manageInventory(Character& c) {
         std::cout << "5. Equip armor / shield\n";
         std::cout << "6. Unequip armor / shield\n";
         std::cout << "0. Back\n";
-        std::cout << "Choice: ";
-        std::cin >> choice;
+        choice = io.readMenuChoice("Choice: ", 6);
 
         if (choice == 1) {
             c.showInventory();
         }
         else if (choice == 2) // Create new item
         {
-            std::cout << "Item type:\n1. Weapon\n2. Armor\n3. Gear\nChoice: ";
-            int typeChoice;
-            std::cin >> typeChoice;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Item type:\n1. Weapon\n2. Armor\n3. Gear\n";
+            const int typeChoice = io.readInt("Choice: ", 1, 3);
 
-            std::string iName, iDesc, iRarity;
-            float iWeight;
-            int iQty, iValue;
-            bool iAttune;
-
-            iName = getValidNameInput("name");
-            std::cout << "Description: "; std::getline(std::cin, iDesc);
-            iRarity = getValidStringInput("rarity (Common/Uncommon/Rare/Very Rare/Legendary)");
-            std::cout << "Weight (lb): "; std::cin >> iWeight;
-            std::cout << "Quantity: ";    std::cin >> iQty;
-            std::cout << "Value (gp): "; std::cin >> iValue;
-            std::cout << "Requires attunement? (1=Yes 0=No): "; std::cin >> iAttune;
+            // Free-form descriptive fields use readName so entries like
+            // "1d6" or "80/320 ft" are accepted.
+            const std::string iName   = io.readName("Name: ");
+            const std::string iDesc   = io.readName("Description: ");
+            const std::string iRarity = io.readText("Rarity (Common/Uncommon/Rare/Very Rare/Legendary): ");
+            const float       iWeight = io.readFloat("Weight (lb): ", 0.0f, 10000.0f);
+            const int         iQty    = io.readInt("Quantity: ", 1, 100000);
+            const int         iValue  = io.readInt("Value (gp): ", 0, 1000000);
+            const bool        iAttune = io.readYesNo("Requires attunement? (y/n): ");
 
             if (typeChoice == 1) {
-                std::string dmgDice, dmgType, wCat, wType, props, range;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Damage dice (e.g. 1d6): "; std::getline(std::cin, dmgDice);
-                std::cout << "Damage type (e.g. Slashing): "; std::getline(std::cin, dmgType);
-                std::cout << "Category (Simple/Martial): "; std::getline(std::cin, wCat);
-                std::cout << "Type (Melee/Ranged): "; std::getline(std::cin, wType);
-                std::cout << "Properties (e.g. Finesse, Light): "; std::getline(std::cin, props);
-                std::cout << "Range (e.g. 5 ft / 80/320 ft): "; std::getline(std::cin, range);
+                const std::string dmgDice = io.readName("Damage dice (e.g. 1d6): ");
+                const std::string dmgType = io.readName("Damage type (e.g. Slashing): ");
+                const std::string wCat    = io.readName("Category (Simple/Martial): ");
+                const std::string wType   = io.readName("Type (Melee/Ranged): ");
+                const std::string props   = io.readName("Properties (e.g. Finesse, Light): ");
+                const std::string range   = io.readName("Range (e.g. 5 ft / 80/320 ft): ");
                 c.addItem(std::make_unique<Weapon>(iName, iDesc, iWeight, iQty, iValue, iRarity, iAttune,
                                                    dmgDice, dmgType, wCat, wType, props, range));
             }
             else if (typeChoice == 2) {
-                std::string aType;
-                int baseAC, maxDex, strReq;
-                bool stealthDis;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Armor type (Light/Medium/Heavy/Shield): "; std::getline(std::cin, aType);
-                std::cout << "Base AC: "; std::cin >> baseAC;
-                std::cout << "Max Dex bonus (-1 for no limit): "; std::cin >> maxDex;
-                std::cout << "Strength requirement (0 for none): "; std::cin >> strReq;
-                std::cout << "Stealth disadvantage? (1=Yes 0=No): "; std::cin >> stealthDis;
+                const std::string aType      = io.readName("Armor type (Light/Medium/Heavy/Shield): ");
+                const int         baseAC     = io.readInt("Base AC: ", 0, 30);
+                const int         maxDex     = io.readInt("Max Dex bonus (-1 for no limit): ", -1, 10);
+                const int         strReq     = io.readInt("Strength requirement (0 for none): ", 0, 30);
+                const bool        stealthDis = io.readYesNo("Stealth disadvantage? (y/n): ");
                 c.addItem(std::make_unique<Armor>(iName, iDesc, iWeight, iQty, iValue, iRarity, iAttune,
                                                   aType, baseAC, maxDex, strReq, stealthDis));
             }
@@ -1356,12 +932,16 @@ void CharacterManager::manageInventory(Character& c) {
             }
             std::cout << "Item added.\n";
         }
-        else if (choice == 3) // Remove item by index 
+        else if (choice == 3) // Remove item by index
         {
-            int index;
-            std::cout << "Index to remove: ";
-            std::cin >> index;
-            c.removeItem(index);
+            if (c.getInventory().size() == 0) {
+                std::cout << "Inventory is empty.\n";
+            } else {
+                c.showInventory();
+                std::cout << "0. Back\n";
+                const int index = io.readMenuChoice("Index to remove: ", c.getInventory().size());
+                if (index > 0) c.removeItem(index);
+            }
         }
         else if (choice == 5) // Equip armor or shield
         {
@@ -1369,21 +949,20 @@ void CharacterManager::manageInventory(Character& c) {
                 std::cout << "Inventory is empty.\n";
             } else {
                 c.showInventory();
-                std::cout << "Enter item number to equip (0 to cancel): ";
-                int idx;
-                std::cin >> idx;
-                if (idx > 0 && idx <= c.getInventory().size()) {
+                std::cout << "0. Cancel\n";
+                const int idx = io.readMenuChoice("Enter item number to equip: ",
+                                                  c.getInventory().size());
+                if (idx > 0) {
                     c.equipArmor(idx);
                     c.equipShield(idx);
                     std::cout << "Equipped. AC is now " << c.getAC() << ".\n";
                 }
             }
         }
-        else if (choice == 6) // Unequip Armor or shield 
+        else if (choice == 6) // Unequip Armor or shield
         {
-            std::cout << "1. Unequip armor\n2. Unequip shield\nChoice: ";
-            int uChoice;
-            std::cin >> uChoice;
+            std::cout << "1. Unequip armor\n2. Unequip shield\n0. Back\n";
+            const int uChoice = io.readMenuChoice("Choice: ", 2);
             if (uChoice == 1) { c.unequipArmor();  std::cout << "Armor unequipped.\n"; }
             if (uChoice == 2) { c.unequipShield(); std::cout << "Shield unequipped.\n"; }
         }
@@ -1396,16 +975,14 @@ void CharacterManager::manageInventory(Character& c) {
                 std::cout << "1. Add currency\n";
                 std::cout << "2. Spend currency\n";
                 std::cout << "0. Back\n";
-                std::cout << "Choice: ";
-                std::cin >> currChoice;
+                currChoice = io.readMenuChoice("Choice: ", 2);
 
                 if (currChoice == 1 || currChoice == 2) {
-                    int pp, gp, ep, sp, cp;
-                    std::cout << "Platinum: "; std::cin >> pp; 
-                    std::cout << "Gold: ";     std::cin >> gp;
-                    std::cout << "Electrum: "; std::cin >> ep;
-                    std::cout << "Silver: ";   std::cin >> sp;
-                    std::cout << "Copper: ";   std::cin >> cp;
+                    const int pp = io.readInt("Platinum: ", 0, 1000000);
+                    const int gp = io.readInt("Gold: ",     0, 1000000);
+                    const int ep = io.readInt("Electrum: ", 0, 1000000);
+                    const int sp = io.readInt("Silver: ",   0, 1000000);
+                    const int cp = io.readInt("Copper: ",   0, 1000000);
 
                     int sign = (currChoice == 2) ? -1 : 1;
                     c.getWallet().adjustPlatinum(sign * pp);
@@ -1443,9 +1020,7 @@ void CharacterManager::manageFeatures(Character& c)
         std::cout << "10. Remove language\n";
         std::cout << "11. Toggle inspiration\n";
         std::cout << "0. Back\n";
-        std::cout << "Choice: ";
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        choice = io.readMenuChoice("Choice: ", 11);
 
         if (choice == 1) // View feats
         {
@@ -1453,23 +1028,16 @@ void CharacterManager::manageFeatures(Character& c)
         }
         else if (choice == 2) // Add feat
         {
-            std::string feat;
-            std::cout << "Feat name: ";
-            std::getline(std::cin, feat);
-            if (!feat.empty())
-            {
-                c.getFeatures().addFeat(feat);
-                std::cout << "Feat added.\n";
-            }
+            c.getFeatures().addFeat(io.readName("Feat name: "));
+            std::cout << "Feat added.\n";
         }
         else if (choice == 3) // Remove feat
         {
             std::cout << "\n=== Feats ===\n";
             c.getFeatures().displayFeats();
-            std::cout << "Index to remove: ";
-            int index = 0;
-            std::cin >> index;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            const int index = io.readInt("Index to remove (0 to cancel): ", 0,
+                                         static_cast<int>(c.getFeatures().getFeats().size()));
+            if (index == 0) continue;
 
             if (c.getFeatures().removeFeat(index))
             {
@@ -1482,23 +1050,16 @@ void CharacterManager::manageFeatures(Character& c)
         }
         else if (choice == 4) // Add racial feat/trait
         {
-            std::string trait;
-            std::cout << "Racial trait name: ";
-            std::getline(std::cin, trait);
-            if (!trait.empty())
-            {
-                c.getFeatures().addRacialTrait(trait);
-                std::cout << "Racial trait added.\n";
-            }
+            c.getFeatures().addRacialTrait(io.readName("Racial trait name: "));
+            std::cout << "Racial trait added.\n";
         }
         else if (choice == 5) // Remove racial feat/trait
         {
             std::cout << "\n=== Racial Traits ===\n";
             c.getFeatures().displayRacialTraits();
-            std::cout << "Index to remove: ";
-            int index = 0;
-            std::cin >> index;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            const int index = io.readInt("Index to remove (0 to cancel): ", 0,
+                                         static_cast<int>(c.getFeatures().getRacialTraits().size()));
+            if (index == 0) continue;
 
             if (c.getFeatures().removeRacialTrait(index))
             {
@@ -1523,30 +1084,11 @@ void CharacterManager::manageFeatures(Character& c)
             c.getFeatures().displaySkills(c.getStrength(), c.getDexterity(), c.getConstitution(),
                                           c.getIntelligence(), c.getWisdom(), c.getCharisma(),
                                           c.getProficiency());
-            std::cout << "Skill number: ";
+            const int skillIndex = io.readInt("Skill number (0 to cancel): ", 0,
+                                              static_cast<int>(skills.size()));
+            if (skillIndex == 0) continue;
 
-            int skillIndex = 0;
-            std::cin >> skillIndex;
-            if (std::cin.fail() || skillIndex < 1 || skillIndex > static_cast<int>(skills.size()))
-            {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid skill selection.\n";
-                continue;
-            }
-
-            std::cout << "Rank (0=None, 1=Proficient, 2=Expertise): ";
-            int rankValue = 0;
-            std::cin >> rankValue;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-            if (std::cin.fail() || rankValue < 0 || rankValue > 2)
-            {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid rank.\n";
-                continue;
-            }
+            const int rankValue = io.readInt("Rank (0=None, 1=Proficient, 2=Expertise): ", 0, 2);
 
             c.getFeatures().setSkillRank(skills[skillIndex - 1].name,
                                          static_cast<SkillRank>(rankValue));
@@ -1559,10 +1101,9 @@ void CharacterManager::manageFeatures(Character& c)
             c.getFeatures().displaySaves(c.getStrength(), c.getDexterity(), c.getConstitution(),
                                          c.getIntelligence(), c.getWisdom(), c.getCharisma(),
                                          c.getProficiency());
-            std::cout << "Enter ability to toggle (STR/DEX/CON/INT/WIS/CHA) or 0 to cancel: ";
-            std::string ability;
-            std::getline(std::cin, ability);
-            if (ability != "0" && !ability.empty())
+            const std::string ability = io.readName(
+                "Enter ability to toggle (STR/DEX/CON/INT/WIS/CHA) or 0 to cancel: ");
+            if (ability != "0")
             {
                 bool current = c.getFeatures().getSaveProficiency(ability);
                 if (c.getFeatures().setSaveProficiency(ability, !current))
@@ -1573,23 +1114,16 @@ void CharacterManager::manageFeatures(Character& c)
         }
         else if (choice == 9) // Add language
         {
-            std::string lang;
-            std::cout << "Language name: ";
-            std::getline(std::cin, lang);
-            if (!lang.empty())
-            {
-                c.getFeatures().addLanguage(lang);
-                std::cout << "Language added.\n";
-            }
+            c.getFeatures().addLanguage(io.readName("Language name: "));
+            std::cout << "Language added.\n";
         }
         else if (choice == 10) // Remove language
         {
             std::cout << "\n=== Languages ===\n";
             c.getFeatures().displayLanguages();
-            std::cout << "Index to remove: ";
-            int index = 0;
-            std::cin >> index;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            const int index = io.readInt("Index to remove (0 to cancel): ", 0,
+                                         static_cast<int>(c.getFeatures().getLanguages().size()));
+            if (index == 0) continue;
             if (c.getFeatures().removeLanguage(index))
                 std::cout << "Language removed.\n";
             else

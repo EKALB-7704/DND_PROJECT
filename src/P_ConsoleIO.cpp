@@ -35,6 +35,24 @@ bool parseInt(const std::string& text, int& out)
     catch (const std::out_of_range&)     { return false; } // exceeds int
 }
 
+// Same idea as parseInt, for decimal fields.
+bool parseFloat(const std::string& text, float& out)
+{
+    const std::string t = trim(text);
+    if (t.empty()) return false;
+
+    try
+    {
+        size_t consumed = 0;
+        const float value = std::stof(t, &consumed);
+        if (consumed != t.size()) return false;
+        out = value;
+        return true;
+    }
+    catch (const std::invalid_argument&) { return false; }
+    catch (const std::out_of_range&)     { return false; }
+}
+
 } // namespace
 
 namespace Validate {
@@ -134,6 +152,27 @@ int ConsoleIO::readIntFrom(const std::string& prompt, const std::vector<int>& al
             out << (i == 0 ? " " : ", ") << allowed[i];
         }
         out << "\n";
+    }
+}
+
+float ConsoleIO::readFloat(const std::string& prompt, float min, float max)
+{
+    std::string line;
+    while (true)
+    {
+        out << prompt;
+        if (!readRawLine(line))
+        {
+            throw EndOfInput("input closed while reading: " + prompt);
+        }
+
+        float value = 0.0f;
+        if (parseFloat(line, value) && value >= min && value <= max)
+        {
+            return value;
+        }
+
+        out << "Invalid entry. Enter a number between " << min << " and " << max << ".\n";
     }
 }
 

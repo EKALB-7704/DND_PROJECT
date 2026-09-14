@@ -527,11 +527,12 @@ void Character::setStats(int AS, int Ability)
             std::cout << "Not an ability";
         }
     }
-    else 
+    else
     {
-    std::cout << "Ability score must be between 1 and 20" << std::endl;
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        // Callers validate the range before calling; this stays as a guard so a
+        // bad value is rejected rather than silently stored. Console recovery is
+        // the caller's job -- a model class should not be touching std::cin.
+        std::cout << "Ability score must be between 1 and 20" << std::endl;
     }
 }
 

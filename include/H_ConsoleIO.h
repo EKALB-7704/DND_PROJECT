@@ -51,6 +51,9 @@ public:
     // contiguous range (e.g. die sides: 4, 6, 8, 10, 12, 20, 100).
     int readIntFrom(const std::string& prompt, const std::vector<int>& allowed);
 
+    // Decimal value in [min, max] inclusive, for fields like item weight.
+    float readFloat(const std::string& prompt, float min, float max);
+
     // Menu selection in [0, maxOption]. 0 is conventionally Back/Exit.
     // Replaces the bare `std::cin >> choice` in every menu loop, where a
     // non-numeric entry used to silently yield 0 and back out or quit.

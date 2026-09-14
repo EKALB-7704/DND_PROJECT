@@ -252,3 +252,32 @@ TEST(ConsoleIOTest, ReadIntFromThrowsAtEndOfInput) {
     Harness h("");
     EXPECT_THROW(h.io.readIntFrom("Die: ", {4, 6}), EndOfInput);
 }
+
+// ---------------------------------------------------------------------------
+// readFloat
+// ---------------------------------------------------------------------------
+
+TEST(ConsoleIOTest, ReadFloatAcceptsDecimal) {
+    Harness h("2.5\n");
+    EXPECT_FLOAT_EQ(h.io.readFloat("Weight: ", 0.0f, 100.0f), 2.5f);
+}
+
+TEST(ConsoleIOTest, ReadFloatAcceptsWholeNumber) {
+    Harness h("3\n");
+    EXPECT_FLOAT_EQ(h.io.readFloat("Weight: ", 0.0f, 100.0f), 3.0f);
+}
+
+TEST(ConsoleIOTest, ReadFloatRejectsOutOfRangeThenAccepts) {
+    Harness h("500\n1.5\n");
+    EXPECT_FLOAT_EQ(h.io.readFloat("Weight: ", 0.0f, 100.0f), 1.5f);
+}
+
+TEST(ConsoleIOTest, ReadFloatRejectsNonNumeric) {
+    Harness h("heavy\n0.5\n");
+    EXPECT_FLOAT_EQ(h.io.readFloat("Weight: ", 0.0f, 100.0f), 0.5f);
+}
+
+TEST(ConsoleIOTest, ReadFloatThrowsAtEndOfInput) {
+    Harness h("");
+    EXPECT_THROW(h.io.readFloat("Weight: ", 0.0f, 1.0f), EndOfInput);
+}

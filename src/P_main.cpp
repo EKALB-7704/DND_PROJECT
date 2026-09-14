@@ -15,7 +15,7 @@ int main() {
   try {
 
     // Initialize character and colour manager objects
-    CharacterManager manager;
+    CharacterManager manager(io);
     Colour_manager col_manager;
     // Dice roller is available from the main menu as a utility tool.
     DiceRoller diceRoller;

@@ -3,9 +3,14 @@
 
 #include <vector>
 #include "H_Character.h"
+#include "H_ConsoleIO.h"
 
 class CharacterManager {
 private:
+
+    // All console reads/writes go through here. Injected so menu flows can be
+    // driven from a std::istringstream under test.
+    ConsoleIO& io;
 
     std::vector<Character> characters;
     std::string Ability_scores[6] = {"Strength: ", "Dexterity: ", "Constitution: ", "Intelligence: ", "Wisdom: ", "Charisma: "};
@@ -14,6 +19,8 @@ private:
 
 public:
 
+    explicit CharacterManager(ConsoleIO& io);
+
     // Character management
     void createCharacter();
     void viewCharacters() const;
@@ -21,17 +28,11 @@ public:
     void manageGlobalSpells();
     bool hasCharacters() const;
 
-    // Utilities
-    std::string getValidStringInput(const std::string& value_to_get); // Re-usable method to get a string input with built in error checking
-    std::string getValidNameInput(const std::string& value_to_get); // Like getValidStringInput but also allows digits and symbols
-    std::string getValidHitDiceInput(); // Gets a valid hit dice input in the format dN (e.g. d12)
-    int getValidIntegerInput(const std::string& value_to_get); // Re-usable method to get a postive non-zero integer input
-    bool isValidString(const std::string& input); // Checks to see if an input is a valid string then returns a bool
-    bool isValidName(const std::string& input); // Like isValidString but also allows digits and symbols
-    bool isValidHitDice(const std::string& input); // Checks for hit dice format: 'd' followed by digits (e.g. d6, d12)
-    void Invalidinput(); // Re-usable method to clear the input buffer fo invalid inputs;
-    
-    
+    // Input validation now lives in ConsoleIO / namespace Validate.
+    // Lists the loaded characters and prompts for one. Returns a 0-based index,
+    // or -1 if the list is empty or the user chose 0 (Back). Replaces the
+    // near-identical listing/prompt blocks that appeared in several menus.
+    int selectCharacter(const std::string& prompt) const;
 
     // Save/Load
     void saveCharacter(const Character& c) const;
