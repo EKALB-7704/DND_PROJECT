@@ -29,7 +29,7 @@ A command-line D&D character management system written in C++. Tracks everything
 DND_PROJECT/
 ├── src/               # Source files (character, inventory, spells, etc.)
 ├── include/           # Header files and custom exception hierarchy
-├── tests/             # Google Test unit tests (10 test suites)
+├── tests/             # Google Test unit tests (11 test suites)
 ├── data/
 │   ├── SpellBook.txt  # Global spell registry
 │   └── characters/    # Per-character save directories
@@ -98,7 +98,7 @@ and is loaded by relative path, so run the program from the repository root.
 
 ## Tests
 
-Ten test suites cover the full system:
+Eleven test suites cover the full system:
 
 - `test_character` — character creation, stats, HP, death saves
 - `test_inventory` — item management and equipping
@@ -110,14 +110,17 @@ Ten test suites cover the full system:
 - `test_features` — skills, saving throws, feats
 - `test_persistence` — file save/load round-tripping
 - `test_colours` — terminal color functionality
+- `test_consoleio` — input parsing, range/format validation, and EOF handling
 
 ## Future Plans
 
 Current focus is a codebase cleanup pass before any new features:
 
-1. Repo hygiene — untrack build artifacts and runtime save data
-2. Consolidate console input behind one validated I/O layer
-3. Split `CharacterManager` (currently ~1600 lines) into per-section menu units
+1. ~~Repo hygiene — untrack build artifacts and runtime save data~~ **done**
+2. ~~Consolidate console input behind one validated I/O layer~~ **done** — see
+   `ConsoleIO`; no raw `std::cin` remains in `src/`
+3. Split `CharacterManager` (now ~1140 lines) into per-section menu units,
+   using the `ConsoleIO` seam to test the menu flows
 4. Add a version header to the character save format, with validation on load
 
 Planned features, once the above lands:
