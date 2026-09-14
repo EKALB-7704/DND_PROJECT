@@ -24,7 +24,7 @@ constexpr const char* kFeaturesTag   = "DNDFEATS";
 constexpr const char* kInventoryTag  = "DNDINV";
 constexpr const char* kWalletTag     = "DNDWALLET";
 constexpr const char* kSpellSlotsTag = "DNDSLOTS";
-constexpr const char* kSpellbookTag  = "DNDSPELLS";
+constexpr const char* kSpellBookTag  = "DNDSPELLS";
 
 // Current version of each file. Bump one when its layout changes, and branch
 // on the value returned by readHeader rather than reinterpreting old offsets.

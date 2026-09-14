@@ -169,25 +169,25 @@ TEST(PersistenceTest, FactoryReconstructsGearSubclass) {
     EXPECT_EQ(item->getItemTag(), "GEAR");
 }
 
-// ── Spellbook save/load roundtrip ──────────────────────────────────────────────
+// ── SpellBook save/load roundtrip ──────────────────────────────────────────────
 
-TEST(PersistenceTest, SpellbookRoundtrip) {
+TEST(PersistenceTest, SpellBookRoundtrip) {
     TempFile tmp("dnd_test_spellbook.tmp");
 
     {
-        Spellbook sb;
+        SpellBook sb;
         sb.addSpell(Spell("Fireball",     "Evocation",   "Damage",  3,
                           "1 action", "150 ft",  "V, S, M", "Instantaneous", "Dexterity",
                           "Fiery explosion at a point."));
         sb.addSpell(Spell("Magic Missile","Evocation",   "Damage",  1,
                           "1 action", "120 ft",  "V, S",    "Instantaneous", "None",
                           "Unerring bolts of force."));
-        sb.saveSpellbook(tmp.path);
+        sb.saveSpellBook(tmp.path);
     }
 
     {
-        Spellbook sb;
-        sb.loadSpellbook(tmp.path);
+        SpellBook sb;
+        sb.loadSpellBook(tmp.path);
         auto spells = sb.getAllSpells();
         ASSERT_EQ(spells.size(), 2u);
         EXPECT_EQ(spells[0].getSpellName(),  "Fireball");
@@ -197,21 +197,21 @@ TEST(PersistenceTest, SpellbookRoundtrip) {
     }
 }
 
-TEST(PersistenceTest, SpellbookRoundtripPreservesAllFields) {
+TEST(PersistenceTest, SpellBookRoundtripPreservesAllFields) {
     TempFile tmp("dnd_test_spellbook2.tmp");
 
     Spell original("Shield", "Abjuration", "Defense", 1,
                    "1 reaction", "Self", "V, S", "1 round", "None",
                    "An invisible barrier of magical force appears.");
     {
-        Spellbook sb;
+        SpellBook sb;
         sb.addSpell(original);
-        sb.saveSpellbook(tmp.path);
+        sb.saveSpellBook(tmp.path);
     }
 
     {
-        Spellbook sb;
-        sb.loadSpellbook(tmp.path);
+        SpellBook sb;
+        sb.loadSpellBook(tmp.path);
         auto spells = sb.getAllSpells();
         ASSERT_EQ(spells.size(), 1u);
         const Spell& s = spells[0];
@@ -228,22 +228,22 @@ TEST(PersistenceTest, SpellbookRoundtripPreservesAllFields) {
     }
 }
 
-TEST(PersistenceTest, SpellbookLoadClearsExistingSpells) {
+TEST(PersistenceTest, SpellBookLoadClearsExistingSpells) {
     TempFile tmp("dnd_test_spellbook3.tmp");
 
     // Save a book with one spell
     {
-        Spellbook sb;
+        SpellBook sb;
         sb.addSpell(Spell("Fireball", "Evocation", "Damage", 3,
                           "1 action", "150 ft", "V, S, M", "Instantaneous", "Dexterity", "Explosion."));
-        sb.saveSpellbook(tmp.path);
+        sb.saveSpellBook(tmp.path);
     }
 
     // Load into a spellbook that already has a different spell
-    Spellbook sb;
+    SpellBook sb;
     sb.addSpell(Spell("Magic Missile", "Evocation", "Damage", 1,
                       "1 action", "120 ft", "V, S", "Instantaneous", "None", "Bolts."));
-    sb.loadSpellbook(tmp.path);
+    sb.loadSpellBook(tmp.path);
 
     auto spells = sb.getAllSpells();
     ASSERT_EQ(spells.size(), 1u);         // old spell replaced, not appended

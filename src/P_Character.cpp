@@ -80,7 +80,7 @@ void Character::saveToDirectory(const std::string& dir) const {
         if (!f) throw SaveError("cannot open wallet.txt in " + dir);
         wallet.save(f);
     }
-    spellbook.saveSpellbook((fs::path(dir) / "spells.txt").string());
+    spellbook.saveSpellBook((fs::path(dir) / "spells.txt").string());
     {
         std::ofstream f((fs::path(dir) / "spellslots.txt").string());
         if (!f) throw SaveError("cannot open spellslots.txt in " + dir);
@@ -239,12 +239,12 @@ Character Character::loadFromDirectory(const std::string& dir,
         std::ifstream f2((fs::path(dir) / "wallet.txt").string());
         if (f2) c.getWallet().load(f2);
     }
-    // Guarded like the other sub-files: loadSpellbook throws if the file is
+    // Guarded like the other sub-files: loadSpellBook throws if the file is
     // absent, which would otherwise make a missing spells.txt fail the whole
     // character load while a missing inventory.txt is tolerated.
     if (fs::exists(fs::path(dir) / "spells.txt"))
     {
-        c.getSpellbook().loadSpellbook((fs::path(dir) / "spells.txt").string());
+        c.getSpellBook().loadSpellBook((fs::path(dir) / "spells.txt").string());
     }
     {
         std::ifstream f2((fs::path(dir) / "spellslots.txt").string());
@@ -674,13 +674,13 @@ void Character::showFeatures() const
 }
 
 //-----------------------------------------------------//
-// Spellbook
-Spellbook& Character::getSpellbook()
+// SpellBook
+SpellBook& Character::getSpellBook()
 {
     return spellbook;
 }
 
-const Spellbook& Character::getSpellbook() const
+const SpellBook& Character::getSpellBook() const
 {
     return spellbook;
 }
@@ -697,7 +697,7 @@ const SpellSlots& Character::getSpellSlots() const
 
 void Character::showSpells() const
 {
-    std::cout << "\n=== Spellbook ===\n";
+    std::cout << "\n=== SpellBook ===\n";
     spellbook.displayAllSpells();
 
     std::cout << "\n=== Spell Slots ===\n";

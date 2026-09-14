@@ -22,12 +22,12 @@
 #define  BRIGHT_WHITE           15
 
 
-class Colour_manager
+class ColourManager
 {
 public:
     // On Windows, enables ANSI virtual terminal processing so escape codes work.
     // No-op on Linux/macOS where ANSI support is built into the terminal.
-    Colour_manager();
+    ColourManager();
 
     // Setters
     void setColour(int colour_code);

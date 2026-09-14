@@ -44,19 +44,19 @@ static const char* ansiCode(int colour_code)
     }
 }
 
-Colour_manager::Colour_manager()
+ColourManager::ColourManager()
 {
 #ifdef _WIN32
     enableAnsiOnWindows();
 #endif
 }
 
-void Colour_manager::setColour(int colour_code)
+void ColourManager::setColour(int colour_code)
 {
     std::cout << ansiCode(colour_code) << std::flush;
 }
 
-void Colour_manager::DisplayColourcodes()
+void ColourManager::DisplayColourcodes()
 {
     std::cout << "===Colours===" << std::endl;
     std::cout << ansiCode(BLACK)        << "0:  Black"        << ansiCode(WHITE) << std::endl;
@@ -77,7 +77,7 @@ void Colour_manager::DisplayColourcodes()
     std::cout << ansiCode(BRIGHT_WHITE) << "15: Bright White" << ansiCode(WHITE) << std::endl;
 }
 
-void Colour_manager::ChangeColour(ConsoleIO& io)
+void ColourManager::ChangeColour(ConsoleIO& io)
 {
     DisplayColourcodes();
     // Previously a bad entry printed "Colour unchanged" and bailed; readInt

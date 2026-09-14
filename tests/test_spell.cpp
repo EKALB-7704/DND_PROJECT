@@ -111,76 +111,76 @@ TEST(SpellTest, SetAllFieldsViaSetters) {
     EXPECT_EQ(s.getSpellDescription(), "An invisible barrier of force appears.");
 }
 
-// ── Spellbook: empty state ─────────────────────────────────────────────────────
+// ── SpellBook: empty state ─────────────────────────────────────────────────────
 
-TEST(SpellbookTest, StartsEmpty) {
-    Spellbook sb;
+TEST(SpellBookTest, StartsEmpty) {
+    SpellBook sb;
     EXPECT_TRUE(sb.getAllSpells().empty());
 }
 
-TEST(SpellbookTest, GetSpellsByLevelOnEmptyBookReturnsEmpty) {
-    Spellbook sb;
+TEST(SpellBookTest, GetSpellsByLevelOnEmptyBookReturnsEmpty) {
+    SpellBook sb;
     EXPECT_TRUE(sb.getSpellsByLevel(1).empty());
 }
 
-// ── Spellbook: addSpell ────────────────────────────────────────────────────────
+// ── SpellBook: addSpell ────────────────────────────────────────────────────────
 
-TEST(SpellbookTest, AddSpellIncreasesCount) {
-    Spellbook sb;
+TEST(SpellBookTest, AddSpellIncreasesCount) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     EXPECT_EQ(sb.getAllSpells().size(), 1u);
 }
 
-TEST(SpellbookTest, AddMultipleSpellsAccumulates) {
-    Spellbook sb;
+TEST(SpellBookTest, AddMultipleSpellsAccumulates) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     sb.addSpell(makeMagicMissile());
     sb.addSpell(makeMageHand());
     EXPECT_EQ(sb.getAllSpells().size(), 3u);
 }
 
-TEST(SpellbookTest, AddedSpellNameIsPreserved) {
-    Spellbook sb;
+TEST(SpellBookTest, AddedSpellNameIsPreserved) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     EXPECT_EQ(sb.getAllSpells()[0].getSpellName(), "Fireball");
 }
 
-// ── Spellbook: removeSpell ─────────────────────────────────────────────────────
+// ── SpellBook: removeSpell ─────────────────────────────────────────────────────
 
-TEST(SpellbookTest, RemoveSpellDecreasesCount) {
-    Spellbook sb;
+TEST(SpellBookTest, RemoveSpellDecreasesCount) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     sb.addSpell(makeMagicMissile());
     sb.removeSpell("Fireball");
     EXPECT_EQ(sb.getAllSpells().size(), 1u);
 }
 
-TEST(SpellbookTest, RemoveSpellRemovesCorrectSpell) {
-    Spellbook sb;
+TEST(SpellBookTest, RemoveSpellRemovesCorrectSpell) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     sb.addSpell(makeMagicMissile());
     sb.removeSpell("Fireball");
     EXPECT_EQ(sb.getAllSpells()[0].getSpellName(), "Magic Missile");
 }
 
-TEST(SpellbookTest, RemoveOnlyRemainingSpellLeavesBookEmpty) {
-    Spellbook sb;
+TEST(SpellBookTest, RemoveOnlyRemainingSpellLeavesBookEmpty) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     sb.removeSpell("Fireball");
     EXPECT_TRUE(sb.getAllSpells().empty());
 }
 
-TEST(SpellbookTest, RemoveNonExistentSpellDoesNotCrash) {
-    Spellbook sb;
+TEST(SpellBookTest, RemoveNonExistentSpellDoesNotCrash) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     EXPECT_NO_FATAL_FAILURE(sb.removeSpell("Nonexistent Spell"));
     EXPECT_EQ(sb.getAllSpells().size(), 1u);  // unchanged
 }
 
-// ── Spellbook: getSpellsByLevel ────────────────────────────────────────────────
+// ── SpellBook: getSpellsByLevel ────────────────────────────────────────────────
 
-TEST(SpellbookTest, GetSpellsByLevelFiltersToCorrectLevel) {
-    Spellbook sb;
+TEST(SpellBookTest, GetSpellsByLevelFiltersToCorrectLevel) {
+    SpellBook sb;
     sb.addSpell(makeMageHand());      // level 0
     sb.addSpell(makeMagicMissile());  // level 1
     sb.addSpell(makeFireball());      // level 3
@@ -190,8 +190,8 @@ TEST(SpellbookTest, GetSpellsByLevelFiltersToCorrectLevel) {
     EXPECT_EQ(level1[0].getSpellName(), "Magic Missile");
 }
 
-TEST(SpellbookTest, GetSpellsByLevelReturnsCantrips) {
-    Spellbook sb;
+TEST(SpellBookTest, GetSpellsByLevelReturnsCantrips) {
+    SpellBook sb;
     sb.addSpell(makeMageHand());
     sb.addSpell(makeFireball());
 
@@ -200,14 +200,14 @@ TEST(SpellbookTest, GetSpellsByLevelReturnsCantrips) {
     EXPECT_EQ(cantrips[0].getSpellName(), "Mage Hand");
 }
 
-TEST(SpellbookTest, GetSpellsByLevelWithNoMatchReturnsEmpty) {
-    Spellbook sb;
+TEST(SpellBookTest, GetSpellsByLevelWithNoMatchReturnsEmpty) {
+    SpellBook sb;
     sb.addSpell(makeFireball());   // level 3
     EXPECT_TRUE(sb.getSpellsByLevel(9).empty());
 }
 
-TEST(SpellbookTest, GetSpellsByLevelReturnsMultipleMatchingSpells) {
-    Spellbook sb;
+TEST(SpellBookTest, GetSpellsByLevelReturnsMultipleMatchingSpells) {
+    SpellBook sb;
     sb.addSpell(makeMagicMissile());  // level 1
     Spell shield("Shield", "Abjuration", "Defense", 1,
                  "1 reaction", "Self", "V, S", "1 round", "None", "Barrier of force.");
@@ -217,8 +217,8 @@ TEST(SpellbookTest, GetSpellsByLevelReturnsMultipleMatchingSpells) {
     EXPECT_EQ(level1.size(), 2u);
 }
 
-TEST(SpellbookTest, GetAllSpellsReturnsEveryAddedSpell) {
-    Spellbook sb;
+TEST(SpellBookTest, GetAllSpellsReturnsEveryAddedSpell) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     sb.addSpell(makeMagicMissile());
 
@@ -228,8 +228,8 @@ TEST(SpellbookTest, GetAllSpellsReturnsEveryAddedSpell) {
     EXPECT_EQ(all[1].getSpellName(), "Magic Missile");
 }
 
-TEST(SpellbookTest, UpdateSpellReplacesSelectedSpell) {
-    Spellbook sb;
+TEST(SpellBookTest, UpdateSpellReplacesSelectedSpell) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
     sb.addSpell(makeMagicMissile());
 
@@ -246,8 +246,8 @@ TEST(SpellbookTest, UpdateSpellReplacesSelectedSpell) {
     EXPECT_EQ(all[1].getSpellName(), "Magic Missile");
 }
 
-TEST(SpellbookTest, UpdateSpellRejectsOutOfRangeIndex) {
-    Spellbook sb;
+TEST(SpellBookTest, UpdateSpellRejectsOutOfRangeIndex) {
+    SpellBook sb;
     sb.addSpell(makeFireball());
 
     EXPECT_FALSE(sb.updateSpell(3, makeMagicMissile()));

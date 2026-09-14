@@ -26,8 +26,8 @@ D20Mode promptD20Mode(ConsoleIO& io);
 
 // The global spell registry, stored at data/SpellBook.txt and loaded by
 // relative path -- so the program must be run from the repository root.
-Spellbook loadGlobalSpellbook();
-void saveGlobalSpellbook(const Spellbook& spellbook);
+SpellBook loadGlobalSpellBook();
+void saveGlobalSpellBook(const SpellBook& spellbook);
 
 } // namespace ManagerHelpers
 

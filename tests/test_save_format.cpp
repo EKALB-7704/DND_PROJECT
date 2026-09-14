@@ -538,28 +538,28 @@ TEST(SubFileFormatTest, FeaturesTreatsOutOfRangeSkillRankAsUntrained) {
     EXPECT_EQ(cf.getSkillRank("Stealth"), SkillRank::None);
 }
 
-// --- Spellbook -------------------------------------------------------------
+// --- SpellBook -------------------------------------------------------------
 
-TEST(SubFileFormatTest, SpellbookWritesHeaderAndRoundtrips) {
+TEST(SubFileFormatTest, SpellBookWritesHeaderAndRoundtrips) {
     TempSaveFile t("book_rt", "");
     {
-        Spellbook b;
+        SpellBook b;
         b.addSpell(Spell("Shield", "Abjuration", "Block", 1, "1 reaction",
                          "Self", "V,S", "1 round", "None", "A shield"));
-        b.saveSpellbook(t.str());
+        b.saveSpellBook(t.str());
     }
     EXPECT_EQ(t.read().rfind("#DNDSPELLS ", 0), 0u);
 
-    Spellbook back;
-    back.loadSpellbook(t.str());
+    SpellBook back;
+    back.loadSpellBook(t.str());
     ASSERT_EQ(back.getAllSpells().size(), 1u);
     EXPECT_EQ(back.getAllSpells()[0].getSpellName(), "Shield");
 }
 
-TEST(SubFileFormatTest, SpellbookRejectsImplausibleCount) {
+TEST(SubFileFormatTest, SpellBookRejectsImplausibleCount) {
     TempSaveFile t("book_count", "999999999\n");
-    Spellbook b;
-    EXPECT_THROW(b.loadSpellbook(t.str()), LoadError);
+    SpellBook b;
+    EXPECT_THROW(b.loadSpellBook(t.str()), LoadError);
 }
 
 // The slot and spellbook tags share a "#DNDS" prefix; the trailing space in

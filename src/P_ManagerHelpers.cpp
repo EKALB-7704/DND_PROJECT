@@ -37,16 +37,16 @@ D20Mode promptD20Mode(ConsoleIO& io)
     }
 }
 
-Spellbook loadGlobalSpellbook()
+SpellBook loadGlobalSpellBook()
 {
-    Spellbook global;
-    global.loadSpellbook("data/SpellBook.txt");
+    SpellBook global;
+    global.loadSpellBook("data/SpellBook.txt");
     return global;
 }
 
-void saveGlobalSpellbook(const Spellbook& spellbook)
+void saveGlobalSpellBook(const SpellBook& spellbook)
 {
-    spellbook.saveSpellbook("data/SpellBook.txt");
+    spellbook.saveSpellBook("data/SpellBook.txt");
 }
 
 } // namespace ManagerHelpers

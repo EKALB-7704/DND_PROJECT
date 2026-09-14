@@ -27,14 +27,14 @@ TEST(ColoursTest, MacroValuesMatchColourCodes)
 
 TEST(ColourManagerTest, ConstructsWithoutCrashing)
 {
-    EXPECT_NO_FATAL_FAILURE(Colour_manager cm);
+    EXPECT_NO_FATAL_FAILURE(ColourManager cm);
 }
 
 // ── setColour: valid codes ─────────────────────────────────────────────────────
 
 TEST(ColourManagerTest, SetColourAllValidCodesDoNotCrash)
 {
-    Colour_manager cm;
+    ColourManager cm;
     for (int code = 0; code <= 15; ++code)
     {
         EXPECT_NO_FATAL_FAILURE(cm.setColour(code))

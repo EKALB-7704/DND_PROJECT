@@ -16,7 +16,7 @@ int main() {
 
     // Initialize character and colour manager objects
     CharacterManager manager(io);
-    Colour_manager col_manager;
+    ColourManager col_manager;
     // Dice roller is available from the main menu as a utility tool.
     DiceRoller diceRoller;
 
@@ -84,15 +84,15 @@ int main() {
   } catch (const EndOfInput&) {
     // stdin closed (Ctrl-D, or a piped script running out). Not an error:
     // restore the terminal colour and leave quietly.
-    Colour_manager().setColour(WHITE);
+    ColourManager().setColour(WHITE);
     std::cout << "\nInput closed. Exiting.\n";
     return 0;
   } catch (const std::exception& e) {
-    Colour_manager().setColour(WHITE);
+    ColourManager().setColour(WHITE);
     std::cerr << "\nFatal error: " << e.what() << "\n";
     return 1;
   } catch (...) {
-    Colour_manager().setColour(WHITE);
+    ColourManager().setColour(WHITE);
     std::cerr << "\nUnknown fatal error.\n";
     return 1;
   }

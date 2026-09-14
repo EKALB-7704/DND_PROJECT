@@ -14,7 +14,7 @@ int spellChoice;
         io.os() << "\n=== Character Spells ===\n";
         io.os() << "1. View Global Spells\n";
         io.os() << "2. Add Existing Spell to Character\n";
-        io.os() << "3. View Character Spellbook\n";
+        io.os() << "3. View Character SpellBook\n";
         io.os() << "4. Cast Spell\n";
         io.os() << "5. Edit Spell Slots\n";
         io.os() << "6. Long Rest\n";
@@ -24,7 +24,7 @@ int spellChoice;
 
         if (spellChoice == 1)
         {
-            Spellbook global = ManagerHelpers::loadGlobalSpellbook();
+            SpellBook global = ManagerHelpers::loadGlobalSpellBook();
             const int level = io.readInt("Enter spell level (0-9): ", 0, 9);
 
             auto spells = global.getSpellsByLevel(level);
@@ -45,7 +45,7 @@ int spellChoice;
         }
         else if (spellChoice == 2)
         {
-            Spellbook global = ManagerHelpers::loadGlobalSpellbook();
+            SpellBook global = ManagerHelpers::loadGlobalSpellBook();
 
             const int level = io.readInt("Enter spell level to filter (0-9): ", 0, 9);
 
@@ -71,7 +71,7 @@ int spellChoice;
                                                    static_cast<int>(spells.size()));
             if (spellNum > 0)
             {
-                c.getSpellbook().addSpell(spells[spellNum - 1]);
+                c.getSpellBook().addSpell(spells[spellNum - 1]);
                 io.os() << "Spell added to character!\n";
             }
             else
@@ -86,7 +86,7 @@ int spellChoice;
         else if (spellChoice == 4)
         {
             // Casting uses the character's own known spells, not the global spell list.
-            auto knownSpells = c.getSpellbook().getAllSpells();
+            auto knownSpells = c.getSpellBook().getAllSpells();
 
             if (knownSpells.empty())
             {
@@ -94,7 +94,7 @@ int spellChoice;
                 continue;
             }
 
-            c.getSpellbook().displaySpellsWithIndex();
+            c.getSpellBook().displaySpellsWithIndex();
             io.os() << "0. Back\n";
             const int selectedSpell = io.readMenuChoice(
                 "Select spell number: ", static_cast<int>(knownSpells.size()));

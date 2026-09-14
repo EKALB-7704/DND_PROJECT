@@ -57,7 +57,7 @@ private:
 
 
     Inventory inventory;
-    Spellbook spellbook;
+    SpellBook spellbook;
     SpellSlots spellSlots;
     Wallet wallet;
     CharacterFeatures features;
@@ -173,9 +173,9 @@ public:
     void setEquippedArmorIndex(int idx);
     void setEquippedShieldIndex(int idx);
 
-    // Spellbook
-    Spellbook& getSpellbook();
-    const Spellbook& getSpellbook() const;
+    // SpellBook
+    SpellBook& getSpellBook();
+    const SpellBook& getSpellBook() const;
     SpellSlots& getSpellSlots();
     const SpellSlots& getSpellSlots() const;
     void showSpells() const;
