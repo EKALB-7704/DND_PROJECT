@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COLOURS_H
+#define COLOURS_H
 #include <iostream>
 
 #include "H_ConsoleIO.h"
@@ -38,3 +39,5 @@ public:
     // Reads the colour choice through io so the prompt is validated and testable.
     void ChangeColour(ConsoleIO& io);
 };
+
+#endif

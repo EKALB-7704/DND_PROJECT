@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DND_EXCEPTIONS_H
+#define DND_EXCEPTIONS_H
 #include <stdexcept>
 #include <string>
 
@@ -19,3 +20,5 @@ struct LoadError : DndException {
 struct EndOfInput : DndException {
     using DndException::DndException;
 };
+
+#endif

@@ -106,7 +106,10 @@ public:
     int getInitiative() const;
     int getProficiency() const;
 
-    int getAbilityModifier(int& ability_score);
+    // Static and by-value: it derives a modifier from a score and touches no
+    // member state. Taking int& meant it could not be called on a const
+    // Character, nor with a literal.
+    static int getAbilityModifier(int ability_score);
 
     // Setters
     void setName(const std::string& n);

@@ -352,7 +352,9 @@ int Character::getWisdom() const {return wisdom;}
 int Character::getCharisma() const {return charisma;}
 int Character::getInitiative() const {return Initiative;}
 int Character::getProficiency() const {return proficiency;}
-int Character::getAbilityModifier(int& ability_score) {return (ability_score / 2) - 5;}
+// D&D modifier is floor((score - 10) / 2). Ability scores are always positive,
+// so integer division truncates toward zero and matches floor here.
+int Character::getAbilityModifier(int ability_score) { return (ability_score / 2) - 5; }
 
 // Setters
 

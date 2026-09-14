@@ -239,3 +239,15 @@ TEST(CharacterTest, AbilityModifierScore16IsPlusThree) {
     int score = 16;
     EXPECT_EQ(c.getAbilityModifier(score), 3);
 }
+
+// getAbilityModifier is static and takes its score by value, so it works on a
+// const Character, with a literal, and without an instance at all.
+TEST(CharacterTest, AbilityModifierIsCallableWithoutAnInstance) {
+    EXPECT_EQ(Character::getAbilityModifier(10), 0);
+    EXPECT_EQ(Character::getAbilityModifier(20), 5);
+    EXPECT_EQ(Character::getAbilityModifier(1), -5);
+    // Odd scores round down, matching floor((score - 10) / 2).
+    EXPECT_EQ(Character::getAbilityModifier(9), -1);
+    EXPECT_EQ(Character::getAbilityModifier(15), 2);
+    EXPECT_EQ(Character::getAbilityModifier(7), -2);
+}
