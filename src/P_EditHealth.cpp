@@ -13,7 +13,7 @@ void CharacterManager::editHealth(Character& c)
     io.os() << "What would you like to change? " << std::endl;
     for (int i = 0; i < 7; i++)
     {
-        io.os() << i + 1 << "." << EditHpArray[i] << std::endl;
+        io.os() << i + 1 << "." << editHpLabels[i] << std::endl;
     }
     health_edit_choice = io.readMenuChoice("Choice: ", 7);
 

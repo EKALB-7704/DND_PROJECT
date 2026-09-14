@@ -11,7 +11,7 @@ void CharacterManager::editDetails(Character& c)
     io.os() << "What would you like to change? " << std::endl;
     for (int i = 0; i < 9; i++)
     {
-        io.os() << i + 1 << "." << EditCharDetailsArray[i] << std::endl;
+        io.os() << i + 1 << "." << editCharDetailsLabels[i] << std::endl;
     }
     char_edit_choice = io.readMenuChoice("Choice: ", 9);
     switch (char_edit_choice)
@@ -93,12 +93,12 @@ void CharacterManager::editAbilityScores(Character& c)
     io.os() << "What stat would you like to change? "  << std::endl;
     for (int i = 0; i < 6; i++)
     {
-        io.os() << i + 1 << ". " << Ability_scores[i] << std::endl;
+        io.os() << i + 1 << ". " << abilityScores[i] << std::endl;
     }
     // abil was previously unvalidated, so a value outside 1-6 indexed
-    // Ability_scores out of bounds.
+    // abilityScores out of bounds.
     const int abil = io.readInt("Choice: ", 1, 6);
-    const int val  = io.readInt("New " + Ability_scores[abil - 1], 1, 20);
+    const int val  = io.readInt("New " + abilityScores[abil - 1], 1, 20);
     c.setStats(val, abil);
 }
 

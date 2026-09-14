@@ -20,7 +20,7 @@
 // The loader exists because the original one read fields positionally with no
 // version marker and no validation, so a value that would be refused at a
 // prompt was accepted without comment from a file. Three saved characters
-// carried hit_dice "0", charisma 0 and proficiency -1 for months as a result.
+// carried hitDice "0", charisma 0 and proficiency -1 for months as a result.
 
 namespace {
 

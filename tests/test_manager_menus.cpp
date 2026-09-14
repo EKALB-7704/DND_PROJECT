@@ -270,7 +270,7 @@ TEST(ManagerMenuTest, EditAbilityScoreSetsCharisma) {
     EXPECT_EQ(h.only().getCharisma(), 14);
 }
 
-// Guards the out-of-bounds read that used to index Ability_scores[abil - 1]
+// Guards the out-of-bounds read that used to index abilityScores[abil - 1]
 // with an unvalidated value.
 TEST(ManagerMenuTest, EditAbilityScoreRejectsIndexOutsideOneToSix) {
     ManagerHarness h(editOnly("4\n9\n0\n2\n17\n0\n"));

@@ -19,22 +19,22 @@ Character::Character(std::string n, std::string r, std::string c, std::string b,
     background = b;
     alignment = a;
     level = lvl;
-    hit_die_num = lvl;
+    hitDiceNum = lvl;
     age = new_age;
     weight = new_weight;
-    current_hp = c_hp;
-    max_hp = m_hp;
-    temp_hp = t_hp;
+    currentHp = c_hp;
+    maxHp = m_hp;
+    tempHp = t_hp;
     deathSaveSuccesses = 0;
     deathSaveFailures = 0;
-    hit_dice = h_dice;
+    hitDice = h_dice;
     strength = str;
     dexterity = dex;
     constitution = con;
     intelligence = intl;
     wisdom = wis;
     charisma = cha;
-    Initiative = init;
+    initiative = init;
     proficiency = prof;
     equippedArmorIndex = -1;
     equippedShieldIndex = -1;
@@ -55,12 +55,12 @@ void Character::saveToDirectory(const std::string& dir) const {
         f << name << "\n" << race << "\n" << characterClass << "\n"
           << background << "\n" << alignment << "\n"
           << level << " " << age << " " << weight << "\n"
-          << current_hp << " " << max_hp << " " << temp_hp << "\n"
+          << currentHp << " " << maxHp << " " << tempHp << "\n"
           << deathSaveSuccesses << " " << deathSaveFailures << "\n"
-          << hit_dice << " " << hit_die_num << "\n"
+          << hitDice << " " << hitDiceNum << "\n"
           << strength << " " << dexterity << " " << constitution << " "
           << intelligence << " " << wisdom << " " << charisma << " "
-          << Initiative << " " << proficiency << "\n"
+          << initiative << " " << proficiency << "\n"
           << equippedArmorIndex << " " << equippedShieldIndex << "\n"
           << (inspiration ? 1 : 0) << "\n"
           << speed << "\n"
@@ -277,8 +277,8 @@ void Character::display() const {
     std::cout << "Background: " << background     << "\n";
     std::cout << "Alignment: "  << alignment      << "\n";
     std::cout << "Weight: "     << weight         << " lbs\n";
-    std::cout << "HP: "         << current_hp << "/" << max_hp;
-    if (temp_hp > 0) std::cout << "  (+" << temp_hp << " temp)";
+    std::cout << "HP: "         << currentHp << "/" << maxHp;
+    if (tempHp > 0) std::cout << "  (+" << tempHp << " temp)";
     std::cout << "\n";
     std::cout << "Death Saves: " << deathSaveSuccesses << " success, "
               << deathSaveFailures << " failure\n";
@@ -288,14 +288,14 @@ void Character::display() const {
     if (equippedShieldIndex > 0 && equippedShieldIndex <= inventory.size())
         std::cout << " + Shield";
     std::cout << "\n";
-    std::cout << "Hit Dice: "   << hit_die_num << "/" << level << hit_dice << "\n";
+    std::cout << "Hit Dice: "   << hitDiceNum << "/" << level << hitDice << "\n";
     std::cout << "STR: " << strength     << " (" << mod(strength)     << ")\n";
     std::cout << "DEX: " << dexterity    << " (" << mod(dexterity)    << ")\n";
     std::cout << "CON: " << constitution << " (" << mod(constitution) << ")\n";
     std::cout << "INT: " << intelligence << " (" << mod(intelligence) << ")\n";
     std::cout << "WIS: " << wisdom       << " (" << mod(wisdom)       << ")\n";
     std::cout << "CHA: " << charisma     << " (" << mod(charisma)     << ")\n";
-    std::cout << "Initiative: +" << Initiative << "\n";
+    std::cout << "initiative: +" << initiative << "\n";
     std::cout << "Proficiency: +" << proficiency << "\n";
     std::cout << "Passive Perception: " << getPassivePerception() << "\n";
     std::cout << "Speed: " << speed << " ft\n";
@@ -337,20 +337,20 @@ std::string Character::getAlignment() const{return alignment;}
 int Character::getLevel() const {return level;}
 int Character::getAge() const{return age;}
 int Character::getWeight() const{return weight;}
-int Character::getCurrentHP() const{return current_hp;}
-int Character::getMaxHP() const{return max_hp;}
-int Character::getTempHP() const{return temp_hp;}
+int Character::getCurrentHP() const{return currentHp;}
+int Character::getMaxHP() const{return maxHp;}
+int Character::getTempHP() const{return tempHp;}
 int Character::getDeathSaveSuccesses() const { return deathSaveSuccesses; }
 int Character::getDeathSaveFailures() const { return deathSaveFailures; }
 const std::vector<std::string>& Character::getConditions() const { return conditions; }
-std::string Character::getHitDice() const{return hit_dice;}
+std::string Character::getHitDice() const{return hitDice;}
 int Character::getStrength() const {return strength;}
 int Character::getDexterity() const {return dexterity;}
 int Character::getConstitution() const {return constitution;}
 int Character::getIntelligence() const {return intelligence;}
 int Character::getWisdom() const {return wisdom;}
 int Character::getCharisma() const {return charisma;}
-int Character::getInitiative() const {return Initiative;}
+int Character::getInitiative() const {return initiative;}
 int Character::getProficiency() const {return proficiency;}
 // D&D modifier is floor((score - 10) / 2). Ability scores are always positive,
 // so integer division truncates toward zero and matches floor here.
@@ -368,15 +368,15 @@ void Character::setAge(int a){age = a;}
 void Character::setWeight(int w){weight = w;}
 void Character::setCurrentHP(int c_hp)
 {
-    current_hp = c_hp;
+    currentHp = c_hp;
     // Any healing above 0 HP clears the death save track.
-    if (current_hp > 0)
+    if (currentHp > 0)
     {
         resetDeathSaves();
     }
 }
-void Character::setMaxHP(int m_hp){max_hp = m_hp;}
-void Character::setTempHP(int t_hp){temp_hp = t_hp;}
+void Character::setMaxHP(int m_hp){maxHp = m_hp;}
+void Character::setTempHP(int t_hp){tempHp = t_hp;}
 void Character::setDeathSaveSuccesses(int successes)
 {
     deathSaveSuccesses = (successes < 0 ? 0 : (successes > 3 ? 3 : successes));
@@ -459,23 +459,23 @@ void Character::clearConditions()
     // Removes every active condition from the character at once.
     conditions.clear();
 }
-void Character::setHitDice(const std::string& new_hit_dice){hit_dice = new_hit_dice;}
-int Character::getHitDiceNum() const { return hit_die_num; }
-void Character::setHitDiceNum(int n) { hit_die_num = (n < 0 ? 0 : (n > level ? level : n)); }
+void Character::setHitDice(const std::string& new_hit_dice){hitDice = new_hit_dice;}
+int Character::getHitDiceNum() const { return hitDiceNum; }
+void Character::setHitDiceNum(int n) { hitDiceNum = (n < 0 ? 0 : (n > level ? level : n)); }
 
 
 // Hit die utilities
 void Character::spendHitDice(int count)
 {
-    if (count < 1 || count > hit_die_num) return;
-    hit_die_num -= count;
+    if (count < 1 || count > hitDiceNum) return;
+    hitDiceNum -= count;
 }
 
 void Character::recoverHitDice()
 {
     // On a long rest, recover half the character's total hit dice (rounded up).
     int recovered = (level + 1) / 2;
-    hit_die_num = (hit_die_num + recovered > level) ? level : hit_die_num + recovered;
+    hitDiceNum = (hitDiceNum + recovered > level) ? level : hitDiceNum + recovered;
 }
 
 // Setters Cont.
@@ -485,7 +485,7 @@ void Character::setConstitution(int con) {constitution = con;}
 void Character::setIntelligence(int intl) {intelligence = intl;}
 void Character::setWisdom(int wis) {wisdom = wis;}
 void Character::setCharisma(int cha) {charisma = cha;}
-void Character::setInitiative(int init) {Initiative = init;}
+void Character::setInitiative(int init) {initiative = init;}
 void Character::setProficiency(int prof) {proficiency = prof;}
 
 bool Character::getInspiration() const { return inspiration; }

@@ -42,7 +42,7 @@ void CharacterManager::createCharacter() {
     int new_AS[6];
     for (int i = 0; i < 6; i++)
     {
-        new_AS[i] = io.readInt("Enter " + Ability_scores[i], 1, 20);
+        new_AS[i] = io.readInt("Enter " + abilityScores[i], 1, 20);
     }
 
     const int init = io.readInt("Enter initiative: ", -10, 20);

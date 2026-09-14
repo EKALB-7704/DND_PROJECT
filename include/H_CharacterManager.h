@@ -24,9 +24,9 @@ private:
     void manageInventory(Character& c);
     void manageFeatures(Character& c);
 
-    std::string Ability_scores[6] = {"Strength: ", "Dexterity: ", "Constitution: ", "Intelligence: ", "Wisdom: ", "Charisma: "};
-    std::string EditCharDetailsArray[9] = {"Name", "Race", "Class", "Background", "Alignment", "Age", "Weight", "Level", "Speed"};
-    std::string EditHpArray[7] = {"Max Hp", "Current Hp", "Temporary Hp", "Hit Dice", "Roll Death Save", "Reset Death Saves", "Conditions"};
+    std::string abilityScores[6] = {"Strength: ", "Dexterity: ", "Constitution: ", "Intelligence: ", "Wisdom: ", "Charisma: "};
+    std::string editCharDetailsLabels[9] = {"Name", "Race", "Class", "Background", "Alignment", "Age", "Weight", "Level", "Speed"};
+    std::string editHpLabels[7] = {"Max Hp", "Current Hp", "Temporary Hp", "Hit Dice", "Roll Death Save", "Reset Death Saves", "Conditions"};
 
 public:
 

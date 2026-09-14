@@ -15,7 +15,7 @@ static Character makeCharacter(
         /*background*/ "Outlander", /*alignment*/ "Neutral Good",
         level, /*age*/ 25, /*weight*/ 180,
         /*c_hp*/ 40, /*m_hp*/ 40, /*t_hp*/ 0,
-        /*hit_dice*/ "5d10",
+        /*hitDice*/ "5d10",
         str, dex, con, intel, wis, cha,
         /*initiative*/ 2, /*proficiency*/ 3
     );

@@ -34,16 +34,16 @@ private:
     int weight;
 
     // Health
-    int current_hp;
-    int max_hp;
-    int temp_hp;
+    int currentHp;
+    int maxHp;
+    int tempHp;
     int deathSaveSuccesses;
     int deathSaveFailures;
     std::vector<std::string> conditions;
 
     //Hit die
-    int hit_die_num;
-    std::string hit_dice;
+    int hitDiceNum;
+    std::string hitDice;
 
     // Stats
     int strength;
@@ -52,7 +52,7 @@ private:
     int intelligence;
     int wisdom;
     int charisma;
-    int Initiative;
+    int initiative;
     int proficiency;
 
 
@@ -202,7 +202,7 @@ public:
     // Loads a character, validating every field rather than trusting the file.
     // Values outside their legal range are repaired to a safe default and a
     // human-readable note is appended to `repairs` (when non-null) rather than
-    // being silently accepted -- this is what let a hit_dice of "0" and a
+    // being silently accepted -- this is what let a hitDice of "0" and a
     // proficiency of -1 sit unnoticed in saved characters.
     // Throws LoadError if the file is missing or too malformed to interpret.
     static Character loadFromDirectory(const std::string& dirPath,
