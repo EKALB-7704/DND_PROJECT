@@ -24,6 +24,7 @@ add_executable(dnd_tests
     test_persistence.cpp
     test_colours.cpp
     test_consoleio.cpp
+    test_manager_menus.cpp
 )
 
 target_link_libraries(dnd_tests

@@ -42,9 +42,9 @@ bool isWarlockClass(const Character& character)
 
 D20Mode promptD20Mode(ConsoleIO& io)
 {
-    std::cout << "1. Normal\n";
-    std::cout << "2. Advantage\n";
-    std::cout << "3. Disadvantage\n";
+    io.os() << "1. Normal\n";
+    io.os() << "2. Advantage\n";
+    io.os() << "3. Disadvantage\n";
     // Previously a bad entry silently fell back to Normal; now it re-prompts.
     switch (io.readInt("Choice: ", 1, 3))
     {
@@ -106,7 +106,7 @@ void CharacterManager::createCharacter() {
                             new_AS[0], new_AS[1], new_AS[2],
                             new_AS[3], new_AS[4], new_AS[5], init, prof);
 
-    std::cout << "Character created!\n";
+    io.os() << "Character created!\n";
 }
 
 bool CharacterManager::hasCharacters() const
@@ -114,16 +114,21 @@ bool CharacterManager::hasCharacters() const
     return !characters.empty();
 }
 
+const std::vector<Character>& CharacterManager::getCharacters() const
+{
+    return characters;
+}
+
 int CharacterManager::selectCharacter(const std::string& prompt) const {
     if (characters.empty()) {
-        std::cout << "No characters available.\n";
+        io.os() << "No characters available.\n";
         return -1;
     }
 
-    std::cout << "\n=== Characters ===\n";
+    io.os() << "\n=== Characters ===\n";
     for (size_t i = 0; i < characters.size(); i++)
-        std::cout << i + 1 << ". " << characters[i].getName() << "\n";
-    std::cout << "0. Back\n";
+        io.os() << i + 1 << ". " << characters[i].getName() << "\n";
+    io.os() << "0. Back\n";
 
     const int choice = io.readMenuChoice(prompt, static_cast<int>(characters.size()));
     return choice == 0 ? -1 : choice - 1;
@@ -143,11 +148,11 @@ void CharacterManager::manageGlobalSpells()
 
     do
     {
-        std::cout << "\n=== Global Spells ===\n";
-        std::cout << "1. View Spells By Level\n";
-        std::cout << "2. Add Spell\n";
-        std::cout << "3. Edit Spell\n";
-        std::cout << "0. Back\n";
+        io.os() << "\n=== Global Spells ===\n";
+        io.os() << "1. View Spells By Level\n";
+        io.os() << "2. Add Spell\n";
+        io.os() << "3. Edit Spell\n";
+        io.os() << "0. Back\n";
         choice = io.readMenuChoice("Choice: ", 3);
 
         if (choice == 1)
@@ -160,15 +165,15 @@ void CharacterManager::manageGlobalSpells()
 
             if (spells.empty())
             {
-                std::cout << "No spells found at that level.\n";
+                io.os() << "No spells found at that level.\n";
             }
             else
             {
-                std::cout << "\n=== Spells At Level " << level << " ===\n";
+                io.os() << "\n=== Spells At Level " << level << " ===\n";
                 for (const auto& spell : spells)
                 {
                     spell.DisplaySpellProperties();
-                    std::cout << "------------------\n";
+                    io.os() << "------------------\n";
                 }
             }
         }
@@ -190,7 +195,7 @@ void CharacterManager::manageGlobalSpells()
             Spellbook global = loadGlobalSpellbook();
             global.addSpell(Spell(name, type, effect, level, time, range, comp, duration, save, desc));
             saveGlobalSpellbook(global);
-            std::cout << "Spell added to global spellbook!\n";
+            io.os() << "Spell added to global spellbook!\n";
         }
         else if (choice == 3)
         {
@@ -199,12 +204,12 @@ void CharacterManager::manageGlobalSpells()
 
             if (spells.empty())
             {
-                std::cout << "No spells available to edit.\n";
+                io.os() << "No spells available to edit.\n";
                 continue;
             }
 
             global.displaySpellsWithIndex();
-            std::cout << "0. Back\n";
+            io.os() << "0. Back\n";
             const int spellNum = io.readMenuChoice("Select spell number: ",
                                                    static_cast<int>(spells.size()));
             if (spellNum == 0) continue;
@@ -214,19 +219,19 @@ void CharacterManager::manageGlobalSpells()
 
             do
             {
-                std::cout << "\n=== Edit Spell: " << spellToEdit.getSpellName() << " ===\n";
-                std::cout << "1. Name\n";
-                std::cout << "2. Type\n";
-                std::cout << "3. Effect\n";
-                std::cout << "4. Level\n";
-                std::cout << "5. Cast Time\n";
-                std::cout << "6. Range\n";
-                std::cout << "7. Components\n";
-                std::cout << "8. Duration\n";
-                std::cout << "9. Saving Throw\n";
-                std::cout << "10. Description\n";
-                std::cout << "11. View Spell Details\n";
-                std::cout << "0. Save and Back\n";
+                io.os() << "\n=== Edit Spell: " << spellToEdit.getSpellName() << " ===\n";
+                io.os() << "1. Name\n";
+                io.os() << "2. Type\n";
+                io.os() << "3. Effect\n";
+                io.os() << "4. Level\n";
+                io.os() << "5. Cast Time\n";
+                io.os() << "6. Range\n";
+                io.os() << "7. Components\n";
+                io.os() << "8. Duration\n";
+                io.os() << "9. Saving Throw\n";
+                io.os() << "10. Description\n";
+                io.os() << "11. View Spell Details\n";
+                io.os() << "0. Save and Back\n";
                 editChoice = io.readMenuChoice("Choice: ", 11);
 
                 switch (editChoice)
@@ -249,7 +254,7 @@ void CharacterManager::manageGlobalSpells()
                         if (global.updateSpell(static_cast<size_t>(spellNum - 1), spellToEdit))
                         {
                             saveGlobalSpellbook(global);
-                            std::cout << "Spell updated.\n";
+                            io.os() << "Spell updated.\n";
                         }
                         break;
                     }
@@ -262,7 +267,7 @@ void CharacterManager::manageGlobalSpells()
 void CharacterManager::editCharacter() {
     // Check for characters
     if (characters.empty()) {
-        std::cout << "No characters to edit.\n";
+        io.os() << "No characters to edit.\n";
         return;
     }
 
@@ -276,17 +281,17 @@ void CharacterManager::editCharacter() {
 
     // Display edit menu
     do {
-        std::cout << "\n=== " << c.getName() << " Editor ===\n";
-        std::cout << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n0. Back \n";
+        io.os() << "\n=== " << c.getName() << " Editor ===\n";
+        io.os() << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n0. Back \n";
         choice = io.readMenuChoice("Choice: ", 6);
 
         if (choice == 1) // Character details
         {
             int char_edit_choice;
-            std::cout << "What would you like to change? " << std::endl;
+            io.os() << "What would you like to change? " << std::endl;
             for (int i = 0; i < 9; i++)
             {
-                std::cout << i + 1 << "." << EditCharDetailsArray[i] << std::endl;
+                io.os() << i + 1 << "." << EditCharDetailsArray[i] << std::endl;
             }
             char_edit_choice = io.readMenuChoice("Choice: ", 9);
             switch (char_edit_choice)
@@ -324,14 +329,14 @@ void CharacterManager::editCharacter() {
                 {
                     std::string new_alignment = io.readText("Enter new Alignment: ");
                     c.setAlignment(new_alignment);
-                    std::cout << "Alignment set" << std::endl;
+                    io.os() << "Alignment set" << std::endl;
                     break;
                 }
             case 6: //Age
                 {
                     int new_age = io.readInt("Enter new Age: ", 0, 100000);
                     c.setAge(new_age);
-                    std::cout << "New age set" << std::endl;
+                    io.os() << "New age set" << std::endl;
                     break;
                 }
 
@@ -339,7 +344,7 @@ void CharacterManager::editCharacter() {
                 {
                     int new_weight = io.readInt("Enter new Weight: ", 0, 100000);
                     c.setWeight(new_weight);
-                    std::cout << "New weight set" << std::endl;
+                    io.os() << "New weight set" << std::endl;
                     break;
                 }
 
@@ -353,7 +358,7 @@ void CharacterManager::editCharacter() {
                 {
                     int new_speed = io.readInt("Enter new Speed (ft): ", 0, 1000);
                     c.setSpeed(new_speed);
-                    std::cout << "Speed set to " << new_speed << " ft\n";
+                    io.os() << "Speed set to " << new_speed << " ft\n";
                     break;
                 }
 
@@ -365,10 +370,10 @@ void CharacterManager::editCharacter() {
         else if (choice == 2) // Health
         {
             int health_edit_choice;
-            std::cout << "What would you like to change? " << std::endl;
+            io.os() << "What would you like to change? " << std::endl;
             for (int i = 0; i < 7; i++)
             {
-                std::cout << i + 1 << "." << EditHpArray[i] << std::endl;
+                io.os() << i + 1 << "." << EditHpArray[i] << std::endl;
             }
             health_edit_choice = io.readMenuChoice("Choice: ", 7);
 
@@ -391,7 +396,7 @@ void CharacterManager::editCharacter() {
                     {
                         c.setMaxHP(new_max_health);
                     }
-                    std::cout << "New max health set" << std::endl;
+                    io.os() << "New max health set" << std::endl;
 
                     break;
                 }
@@ -409,21 +414,21 @@ void CharacterManager::editCharacter() {
                 {
                     int new_temp_health = io.readInt("Enter new Temporary Heath: ", 0, 100000);
                     c.setTempHP(new_temp_health);
-                    std::cout << "New temp health set" << std::endl;
+                    io.os() << "New temp health set" << std::endl;
                     break;
                 }
                 case 4: //Hit Dice
                 {
                     std::string new_hit_dice = io.readHitDice("Enter new hit dice (e.g. d6, d8, d12): ");
                     c.setHitDice(new_hit_dice);
-                    std::cout << "New hit dice set" << std::endl;
+                    io.os() << "New hit dice set" << std::endl;
                     break;
                 }
                 case 5: //Roll Death Save
                 {
                     if (c.getCurrentHP() > 0)
                     {
-                        std::cout << "Death saves are usually only needed at 0 HP.\n";
+                        io.os() << "Death saves are usually only needed at 0 HP.\n";
                     }
 
                     // Death saves explanation:
@@ -435,7 +440,7 @@ void CharacterManager::editCharacter() {
                     // revival to 1 HP (handled by Character::applyDeathSaveRoll). A natural 1
                     // counts as two failures.
 
-                    std::cout << "\n=== Death Save Roll ===\n";
+                    io.os() << "\n=== Death Save Roll ===\n";
                     const D20Mode mode = promptD20Mode(io);
 
                     DiceRoller roller;
@@ -444,44 +449,44 @@ void CharacterManager::editCharacter() {
                     // Show both rolls when advantage/disadvantage is used so the chosen result is clear.
                     if (mode == D20Mode::Normal)
                     {
-                        std::cout << "Roll: " << result.chosenRoll << "\n";
+                        io.os() << "Roll: " << result.chosenRoll << "\n";
                     }
                     else
                     {
-                        std::cout << "Rolls: " << result.firstRoll << ", " << result.secondRoll << "\n";
-                        std::cout << "Chosen roll: " << result.chosenRoll << "\n";
+                        io.os() << "Rolls: " << result.firstRoll << ", " << result.secondRoll << "\n";
+                        io.os() << "Chosen roll: " << result.chosenRoll << "\n";
                     }
 
                     if (result.chosenRoll >= 10)
                     {
-                        std::cout << "Result: PASS\n";
+                        io.os() << "Result: PASS\n";
                     }
                     else
                     {
-                        std::cout << "Result: FAILURE\n";
+                        io.os() << "Result: FAILURE\n";
                     }
 
                     const DeathSaveOutcome outcome = c.applyDeathSaveRoll(result.chosenRoll);
 
                     if (outcome == DeathSaveOutcome::Revived)
                     {
-                        std::cout << "Natural 20: character regains 1 HP.\n";
+                        io.os() << "Natural 20: character regains 1 HP.\n";
                     }
                     else if (result.chosenRoll == 1)
                     {
-                        std::cout << "Natural 1: counts as two failed death saves.\n";
+                        io.os() << "Natural 1: counts as two failed death saves.\n";
                     }
 
                     if (outcome == DeathSaveOutcome::Stable)
                     {
-                        std::cout << "You are stable.\n";
+                        io.os() << "You are stable.\n";
                     }
                     else if (outcome == DeathSaveOutcome::Dead)
                     {
-                        std::cout << "You have died.\n";
+                        io.os() << "You have died.\n";
                     }
 
-                    std::cout << "Death saves: "
+                    io.os() << "Death saves: "
                               << c.getDeathSaveSuccesses() << " success, "
                               << c.getDeathSaveFailures() << " failure\n";
                     break;
@@ -489,7 +494,7 @@ void CharacterManager::editCharacter() {
                 case 6: //Reset Death Saves
                 {
                     c.resetDeathSaves();
-                    std::cout << "Death saves reset.\n";
+                    io.os() << "Death saves reset.\n";
                     break;
                 }
                 case 7: //Conditions
@@ -504,32 +509,32 @@ void CharacterManager::editCharacter() {
                         // gameplay impacts. This block allows adding, removing, and clearing
                         // those condition strings from the character's recorded list.
 
-                        std::cout << "\n=== Conditions ===\n";
+                        io.os() << "\n=== Conditions ===\n";
                         const auto& conditions = c.getConditions();
                         // Conditions are displayed with 1-based numbering because that matches user input.
                         if (conditions.empty())
                         {
-                            std::cout << "No conditions recorded.\n";
+                            io.os() << "No conditions recorded.\n";
                         }
                         else
                         {
                             for (size_t i = 0; i < conditions.size(); i++)
                             {
-                                std::cout << i + 1 << ". " << conditions[i] << "\n";
+                                io.os() << i + 1 << ". " << conditions[i] << "\n";
                             }
                         }
 
-                        std::cout << "1. Add Condition\n";
-                        std::cout << "2. Remove Condition\n";
-                        std::cout << "3. Clear Conditions\n";
-                        std::cout << "0. Back\n";
+                        io.os() << "1. Add Condition\n";
+                        io.os() << "2. Remove Condition\n";
+                        io.os() << "3. Clear Conditions\n";
+                        io.os() << "0. Back\n";
                         condition_choice = io.readMenuChoice("Choice: ", 3);
 
                         if (condition_choice == 1)
                         {
                             std::string condition = io.readText("Enter new condition: ");
                             c.addCondition(condition);
-                            std::cout << "Condition added.\n";
+                            io.os() << "Condition added.\n";
                         }
                         else if (condition_choice == 2)
                         {
@@ -538,21 +543,21 @@ void CharacterManager::editCharacter() {
                                 static_cast<int>(c.getConditions().size()));
                             if (c.removeCondition(index))
                             {
-                                std::cout << "Condition removed.\n";
+                                io.os() << "Condition removed.\n";
                             }
                             else
                             {
-                                std::cout << "Invalid condition number.\n";
+                                io.os() << "Invalid condition number.\n";
                             }
                         }
                         else if (condition_choice == 3)
                         {
                             c.clearConditions();
-                            std::cout << "All conditions cleared.\n";
+                            io.os() << "All conditions cleared.\n";
                         }
                         else if (condition_choice != 0)
                         {
-                            std::cout << "Invalid choice.\n";
+                            io.os() << "Invalid choice.\n";
                         }
                     } while (condition_choice != 0);
                     break;
@@ -568,10 +573,10 @@ void CharacterManager::editCharacter() {
         }
         else if (choice == 4) // Stats
         {
-            std::cout << "What stat would you like to change? "  << std::endl;
+            io.os() << "What stat would you like to change? "  << std::endl;
             for (int i = 0; i < 6; i++)
             {
-                std::cout << i + 1 << ". " << Ability_scores[i] << std::endl;
+                io.os() << i + 1 << ". " << Ability_scores[i] << std::endl;
             }
             // abil was previously unvalidated, so a value outside 1-6 indexed
             // Ability_scores out of bounds.
@@ -584,15 +589,15 @@ void CharacterManager::editCharacter() {
         int spellChoice;
 
             do {
-                std::cout << "\n=== Character Spells ===\n";
-                std::cout << "1. View Global Spells\n";
-                std::cout << "2. Add Existing Spell to Character\n";
-                std::cout << "3. View Character Spellbook\n";
-                std::cout << "4. Cast Spell\n";
-                std::cout << "5. Edit Spell Slots\n";
-                std::cout << "6. Long Rest\n";
-                std::cout << "7. Short Rest\n";
-                std::cout << "0. Back\n";
+                io.os() << "\n=== Character Spells ===\n";
+                io.os() << "1. View Global Spells\n";
+                io.os() << "2. Add Existing Spell to Character\n";
+                io.os() << "3. View Character Spellbook\n";
+                io.os() << "4. Cast Spell\n";
+                io.os() << "5. Edit Spell Slots\n";
+                io.os() << "6. Long Rest\n";
+                io.os() << "7. Short Rest\n";
+                io.os() << "0. Back\n";
                 spellChoice = io.readMenuChoice("Choice: ", 7);
 
                 if (spellChoice == 1)
@@ -604,13 +609,13 @@ void CharacterManager::editCharacter() {
 
                     if (spells.empty())
                     {
-                        std::cout << "No spells found at that level.\n";
+                        io.os() << "No spells found at that level.\n";
                     }
                     else
                     {
                         for (size_t i = 0; i < spells.size(); i++)
                         {
-                            std::cout << i + 1 << ". "
+                            io.os() << i + 1 << ". "
                                       << spells[i].getSpellName()
                                       << "\n";
                         }
@@ -626,30 +631,30 @@ void CharacterManager::editCharacter() {
 
                     if (spells.empty())
                     {
-                        std::cout << "No spells of that level.\n";
+                        io.os() << "No spells of that level.\n";
                         continue;
                     }
 
                     // Display Spells
-                    std::cout << "\n=== Filtered Spells ===\n";
+                    io.os() << "\n=== Filtered Spells ===\n";
                     for (size_t i = 0; i < spells.size(); i++)
                     {
-                        std::cout << i + 1 << ". "
+                        io.os() << i + 1 << ". "
                                 << spells[i].getSpellName()
                                 << " (Level " << spells[i].getSpellLevel() << ")\n";
                     }
 
-                    std::cout << "0. Back\n";
+                    io.os() << "0. Back\n";
                     const int spellNum = io.readMenuChoice("Select spell number: ",
                                                            static_cast<int>(spells.size()));
                     if (spellNum > 0)
                     {
                         c.getSpellbook().addSpell(spells[spellNum - 1]);
-                        std::cout << "Spell added to character!\n";
+                        io.os() << "Spell added to character!\n";
                     }
                     else
                     {
-                        std::cout << "Invalid selection.\n";
+                        io.os() << "Invalid selection.\n";
                     }
                 }
                 else if (spellChoice == 3)
@@ -663,12 +668,12 @@ void CharacterManager::editCharacter() {
 
                     if (knownSpells.empty())
                     {
-                        std::cout << "Character has no spells in their spellbook.\n";
+                        io.os() << "Character has no spells in their spellbook.\n";
                         continue;
                     }
 
                     c.getSpellbook().displaySpellsWithIndex();
-                    std::cout << "0. Back\n";
+                    io.os() << "0. Back\n";
                     const int selectedSpell = io.readMenuChoice(
                         "Select spell number: ", static_cast<int>(knownSpells.size()));
                     if (selectedSpell == 0) continue;
@@ -678,7 +683,7 @@ void CharacterManager::editCharacter() {
 
                     if (spellLevel == 0)
                     {
-                        std::cout << spellToCast.getSpellName() << " is a cantrip and does not use a spell slot.\n";
+                        io.os() << spellToCast.getSpellName() << " is a cantrip and does not use a spell slot.\n";
                         continue;
                     }
 
@@ -689,15 +694,15 @@ void CharacterManager::editCharacter() {
 
                     if (c.getSpellSlots().useSlot(slotLevel))
                     {
-                        std::cout << spellToCast.getSpellName() << " cast using a level "
+                        io.os() << spellToCast.getSpellName() << " cast using a level "
                                   << slotLevel << " slot.\n";
-                        std::cout << "Remaining level " << slotLevel << " slots: "
+                        io.os() << "Remaining level " << slotLevel << " slots: "
                                   << c.getSpellSlots().getCurrentSlots(slotLevel) << "/"
                                   << c.getSpellSlots().getMaxSlots(slotLevel) << "\n";
                     }
                     else
                     {
-                        std::cout << "No level " << slotLevel << " spell slots remaining.\n";
+                        io.os() << "No level " << slotLevel << " spell slots remaining.\n";
                     }
                 }
                 else if (spellChoice == 5)
@@ -706,11 +711,11 @@ void CharacterManager::editCharacter() {
 
                     do
                     {
-                        std::cout << "\n=== Edit Spell Slots ===\n";
+                        io.os() << "\n=== Edit Spell Slots ===\n";
                         c.getSpellSlots().displaySlots();
-                        std::cout << "1. Set max slots for a level\n";
-                        std::cout << "2. Set current slots for a level\n";
-                        std::cout << "0. Back\n";
+                        io.os() << "1. Set max slots for a level\n";
+                        io.os() << "2. Set current slots for a level\n";
+                        io.os() << "0. Back\n";
                         slotEditChoice = io.readMenuChoice("Choice: ", 2);
 
                         if (slotEditChoice == 1 || slotEditChoice == 2)
@@ -727,7 +732,7 @@ void CharacterManager::editCharacter() {
                                 {
                                     c.getSpellSlots().setCurrentSlots(slotLevel, 0);
                                 }
-                                std::cout << "Max slots updated for level " << slotLevel << ".\n";
+                                io.os() << "Max slots updated for level " << slotLevel << ".\n";
                             }
                             else
                             {
@@ -737,7 +742,7 @@ void CharacterManager::editCharacter() {
                                     c.getSpellSlots().getMaxSlots(slotLevel));
 
                                 c.getSpellSlots().setCurrentSlots(slotLevel, currentSlots);
-                                std::cout << "Current slots updated for level " << slotLevel << ".\n";
+                                io.os() << "Current slots updated for level " << slotLevel << ".\n";
                             }
                         }
                     } while (slotEditChoice != 0);
@@ -747,24 +752,24 @@ void CharacterManager::editCharacter() {
                     c.getSpellSlots().resetSlots();
                     c.setCurrentHP(c.getMaxHP());
                     c.recoverHitDice();
-                    std::cout << "Long rest complete. HP, spell slots, and hit dice restored.\n";
-                    std::cout << "Hit dice: " << c.getHitDiceNum() << "/" << c.getLevel() << c.getHitDice() << "\n";
+                    io.os() << "Long rest complete. HP, spell slots, and hit dice restored.\n";
+                    io.os() << "Hit dice: " << c.getHitDiceNum() << "/" << c.getLevel() << c.getHitDice() << "\n";
                 }
                 else if (spellChoice == 7)
                 {
                     if (isWarlockClass(c))
                     {
                         c.getSpellSlots().resetSlots();
-                        std::cout << "Short rest complete. Warlock spell slots restored to full.\n";
+                        io.os() << "Short rest complete. Warlock spell slots restored to full.\n";
                     }
                     else
                     {
-                        std::cout << "Short rest complete. Spell slots unchanged for "
+                        io.os() << "Short rest complete. Spell slots unchanged for "
                                   << c.getClass() << ".\n";
                     }
 
                     // All classes can spend hit dice during a short rest.
-                    std::cout << "Hit dice available: " << c.getHitDiceNum()
+                    io.os() << "Hit dice available: " << c.getHitDiceNum()
                               << "/" << c.getLevel() << c.getHitDice() << "\n";
                     if (c.getHitDiceNum() > 0 && c.getCurrentHP() < c.getMaxHP())
                     {
@@ -783,7 +788,7 @@ void CharacterManager::editCharacter() {
                                 c.setCurrentHP(newHp > c.getMaxHP() ? c.getMaxHP() : newHp);
                             }
                             c.spendHitDice(toSpend);
-                            std::cout << "HP: " << c.getCurrentHP() << "/" << c.getMaxHP()
+                            io.os() << "HP: " << c.getCurrentHP() << "/" << c.getMaxHP()
                                       << "  Hit dice remaining: " << c.getHitDiceNum() << "\n";
                         }
                     }
@@ -796,7 +801,7 @@ void CharacterManager::editCharacter() {
         }
         else if (choice == 0)
         {
-            std::cout << "Exiting edit menu " << std::endl;
+            io.os() << "Exiting edit menu " << std::endl;
         }
 
     } while (choice != 0);
@@ -809,17 +814,17 @@ void CharacterManager::saveCharacter(const Character& c) const {
     try {
         fs::create_directories(dir);
         c.saveToDirectory(dir.string());
-        std::cout << c.getName() << " saved.\n";
+        io.os() << c.getName() << " saved.\n";
     } catch (const SaveError& e) {
-        std::cout << "Failed to save " << c.getName() << ": " << e.what() << "\n";
+        io.os() << "Failed to save " << c.getName() << ": " << e.what() << "\n";
     } catch (const fs::filesystem_error& e) {
-        std::cout << "Filesystem error saving " << c.getName() << ": " << e.what() << "\n";
+        io.os() << "Filesystem error saving " << c.getName() << ": " << e.what() << "\n";
     }
 }
 
 void CharacterManager::saveAll() const {
     if (characters.empty()) {
-        std::cout << "No characters to save.\n";
+        io.os() << "No characters to save.\n";
         return;
     }
     for (const auto& c : characters)
@@ -831,7 +836,7 @@ void CharacterManager::loadAll() {
     fs::path base = fs::path("data") / "characters";
 
     if (!fs::exists(base) || !fs::is_directory(base)) {
-        std::cout << "No saved characters found.\n";
+        io.os() << "No saved characters found.\n";
         return;
     }
 
@@ -844,19 +849,19 @@ void CharacterManager::loadAll() {
                     characters.push_back(Character::loadFromDirectory(entry.path().string()));
                     loaded++;
                 } catch (const LoadError& e) {
-                    std::cout << "Skipped " << entry.path().filename().string()
+                    io.os() << "Skipped " << entry.path().filename().string()
                               << ": " << e.what() << "\n";
                 }
             }
         }
     } catch (const fs::filesystem_error& e) {
-        std::cout << "Filesystem error reading character directory: " << e.what() << "\n";
+        io.os() << "Filesystem error reading character directory: " << e.what() << "\n";
     }
 
     if (loaded == 0)
-        std::cout << "No saved characters found.\n";
+        io.os() << "No saved characters found.\n";
     else
-        std::cout << "Loaded " << loaded << " character(s).\n";
+        io.os() << "Loaded " << loaded << " character(s).\n";
 }
 
 std::vector<std::string> CharacterManager::listCharacterNames() const {
@@ -880,14 +885,14 @@ void CharacterManager::manageInventory(Character& c) {
 
     do {
         // Inventory menu
-        std::cout << "\n=== Inventory ===\n";
-        std::cout << "1. View\n";
-        std::cout << "2. Add Item\n";
-        std::cout << "3. Remove Item\n";
-        std::cout << "4. Currency\n";
-        std::cout << "5. Equip armor / shield\n";
-        std::cout << "6. Unequip armor / shield\n";
-        std::cout << "0. Back\n";
+        io.os() << "\n=== Inventory ===\n";
+        io.os() << "1. View\n";
+        io.os() << "2. Add Item\n";
+        io.os() << "3. Remove Item\n";
+        io.os() << "4. Currency\n";
+        io.os() << "5. Equip armor / shield\n";
+        io.os() << "6. Unequip armor / shield\n";
+        io.os() << "0. Back\n";
         choice = io.readMenuChoice("Choice: ", 6);
 
         if (choice == 1) {
@@ -895,7 +900,7 @@ void CharacterManager::manageInventory(Character& c) {
         }
         else if (choice == 2) // Create new item
         {
-            std::cout << "Item type:\n1. Weapon\n2. Armor\n3. Gear\n";
+            io.os() << "Item type:\n1. Weapon\n2. Armor\n3. Gear\n";
             const int typeChoice = io.readInt("Choice: ", 1, 3);
 
             // Free-form descriptive fields use readName so entries like
@@ -930,15 +935,15 @@ void CharacterManager::manageInventory(Character& c) {
             else {
                 c.addItem(std::make_unique<Gear>(iName, iDesc, iWeight, iQty, iValue, iRarity, iAttune));
             }
-            std::cout << "Item added.\n";
+            io.os() << "Item added.\n";
         }
         else if (choice == 3) // Remove item by index
         {
             if (c.getInventory().size() == 0) {
-                std::cout << "Inventory is empty.\n";
+                io.os() << "Inventory is empty.\n";
             } else {
                 c.showInventory();
-                std::cout << "0. Back\n";
+                io.os() << "0. Back\n";
                 const int index = io.readMenuChoice("Index to remove: ", c.getInventory().size());
                 if (index > 0) c.removeItem(index);
             }
@@ -946,35 +951,35 @@ void CharacterManager::manageInventory(Character& c) {
         else if (choice == 5) // Equip armor or shield
         {
             if (c.getInventory().size() == 0) {
-                std::cout << "Inventory is empty.\n";
+                io.os() << "Inventory is empty.\n";
             } else {
                 c.showInventory();
-                std::cout << "0. Cancel\n";
+                io.os() << "0. Cancel\n";
                 const int idx = io.readMenuChoice("Enter item number to equip: ",
                                                   c.getInventory().size());
                 if (idx > 0) {
                     c.equipArmor(idx);
                     c.equipShield(idx);
-                    std::cout << "Equipped. AC is now " << c.getAC() << ".\n";
+                    io.os() << "Equipped. AC is now " << c.getAC() << ".\n";
                 }
             }
         }
         else if (choice == 6) // Unequip Armor or shield
         {
-            std::cout << "1. Unequip armor\n2. Unequip shield\n0. Back\n";
+            io.os() << "1. Unequip armor\n2. Unequip shield\n0. Back\n";
             const int uChoice = io.readMenuChoice("Choice: ", 2);
-            if (uChoice == 1) { c.unequipArmor();  std::cout << "Armor unequipped.\n"; }
-            if (uChoice == 2) { c.unequipShield(); std::cout << "Shield unequipped.\n"; }
+            if (uChoice == 1) { c.unequipArmor();  io.os() << "Armor unequipped.\n"; }
+            if (uChoice == 2) { c.unequipShield(); io.os() << "Shield unequipped.\n"; }
         }
         else if (choice == 4) // Manage currency
         {
             int currChoice;
             do {
-                std::cout << "\n=== Currency ===\n";
+                io.os() << "\n=== Currency ===\n";
                 c.showCurrency();
-                std::cout << "1. Add currency\n";
-                std::cout << "2. Spend currency\n";
-                std::cout << "0. Back\n";
+                io.os() << "1. Add currency\n";
+                io.os() << "2. Spend currency\n";
+                io.os() << "0. Back\n";
                 currChoice = io.readMenuChoice("Choice: ", 2);
 
                 if (currChoice == 1 || currChoice == 2) {
@@ -991,7 +996,7 @@ void CharacterManager::manageInventory(Character& c) {
                     c.getWallet().adjustSilver(sign * sp);
                     c.getWallet().adjustCopper(sign * cp);
 
-                    std::cout << (currChoice == 1 ? "Currency added.\n" : "Currency spent.\n");
+                    io.os() << (currChoice == 1 ? "Currency added.\n" : "Currency spent.\n");
                 }
             } while (currChoice != 0);
         }
@@ -1007,19 +1012,19 @@ void CharacterManager::manageFeatures(Character& c)
     do
     {
         // This submenu acts as a lightweight tracker rather than a rules engine.
-        std::cout << "\n=== Features And Skills ===\n";
-        std::cout << "1. View all\n";
-        std::cout << "2. Add feat\n";
-        std::cout << "3. Remove feat\n";
-        std::cout << "4. Add racial trait\n";
-        std::cout << "5. Remove racial trait\n";
-        std::cout << "6. View skills\n";
-        std::cout << "7. Edit skill proficiency\n";
-        std::cout << "8. Edit saving throw proficiency\n";
-        std::cout << "9. Add language\n";
-        std::cout << "10. Remove language\n";
-        std::cout << "11. Toggle inspiration\n";
-        std::cout << "0. Back\n";
+        io.os() << "\n=== Features And Skills ===\n";
+        io.os() << "1. View all\n";
+        io.os() << "2. Add feat\n";
+        io.os() << "3. Remove feat\n";
+        io.os() << "4. Add racial trait\n";
+        io.os() << "5. Remove racial trait\n";
+        io.os() << "6. View skills\n";
+        io.os() << "7. Edit skill proficiency\n";
+        io.os() << "8. Edit saving throw proficiency\n";
+        io.os() << "9. Add language\n";
+        io.os() << "10. Remove language\n";
+        io.os() << "11. Toggle inspiration\n";
+        io.os() << "0. Back\n";
         choice = io.readMenuChoice("Choice: ", 11);
 
         if (choice == 1) // View feats
@@ -1029,11 +1034,11 @@ void CharacterManager::manageFeatures(Character& c)
         else if (choice == 2) // Add feat
         {
             c.getFeatures().addFeat(io.readName("Feat name: "));
-            std::cout << "Feat added.\n";
+            io.os() << "Feat added.\n";
         }
         else if (choice == 3) // Remove feat
         {
-            std::cout << "\n=== Feats ===\n";
+            io.os() << "\n=== Feats ===\n";
             c.getFeatures().displayFeats();
             const int index = io.readInt("Index to remove (0 to cancel): ", 0,
                                          static_cast<int>(c.getFeatures().getFeats().size()));
@@ -1041,21 +1046,21 @@ void CharacterManager::manageFeatures(Character& c)
 
             if (c.getFeatures().removeFeat(index))
             {
-                std::cout << "Feat removed.\n";
+                io.os() << "Feat removed.\n";
             }
             else
             {
-                std::cout << "Invalid index.\n";
+                io.os() << "Invalid index.\n";
             }
         }
         else if (choice == 4) // Add racial feat/trait
         {
             c.getFeatures().addRacialTrait(io.readName("Racial trait name: "));
-            std::cout << "Racial trait added.\n";
+            io.os() << "Racial trait added.\n";
         }
         else if (choice == 5) // Remove racial feat/trait
         {
-            std::cout << "\n=== Racial Traits ===\n";
+            io.os() << "\n=== Racial Traits ===\n";
             c.getFeatures().displayRacialTraits();
             const int index = io.readInt("Index to remove (0 to cancel): ", 0,
                                          static_cast<int>(c.getFeatures().getRacialTraits().size()));
@@ -1063,16 +1068,16 @@ void CharacterManager::manageFeatures(Character& c)
 
             if (c.getFeatures().removeRacialTrait(index))
             {
-                std::cout << "Racial trait removed.\n";
+                io.os() << "Racial trait removed.\n";
             }
             else
             {
-                std::cout << "Invalid index.\n";
+                io.os() << "Invalid index.\n";
             }
         }
         else if (choice == 6) // View skills
         {
-            std::cout << "\n=== Skills ===\n";
+            io.os() << "\n=== Skills ===\n";
             c.getFeatures().displaySkills(c.getStrength(), c.getDexterity(), c.getConstitution(),
                                           c.getIntelligence(), c.getWisdom(), c.getCharisma(),
                                           c.getProficiency());
@@ -1092,12 +1097,12 @@ void CharacterManager::manageFeatures(Character& c)
 
             c.getFeatures().setSkillRank(skills[skillIndex - 1].name,
                                          static_cast<SkillRank>(rankValue));
-            std::cout << "Skill updated.\n";
+            io.os() << "Skill updated.\n";
         }
 
         else if (choice == 8) // Edit saving throw proficiencys
         {
-            std::cout << "\n=== Saving Throws ===\n";
+            io.os() << "\n=== Saving Throws ===\n";
             c.getFeatures().displaySaves(c.getStrength(), c.getDexterity(), c.getConstitution(),
                                          c.getIntelligence(), c.getWisdom(), c.getCharisma(),
                                          c.getProficiency());
@@ -1107,33 +1112,33 @@ void CharacterManager::manageFeatures(Character& c)
             {
                 bool current = c.getFeatures().getSaveProficiency(ability);
                 if (c.getFeatures().setSaveProficiency(ability, !current))
-                    std::cout << ability << " saving throw " << (!current ? "proficient" : "not proficient") << ".\n";
+                    io.os() << ability << " saving throw " << (!current ? "proficient" : "not proficient") << ".\n";
                 else
-                    std::cout << "Invalid ability. Use STR, DEX, CON, INT, WIS, or CHA.\n";
+                    io.os() << "Invalid ability. Use STR, DEX, CON, INT, WIS, or CHA.\n";
             }
         }
         else if (choice == 9) // Add language
         {
             c.getFeatures().addLanguage(io.readName("Language name: "));
-            std::cout << "Language added.\n";
+            io.os() << "Language added.\n";
         }
         else if (choice == 10) // Remove language
         {
-            std::cout << "\n=== Languages ===\n";
+            io.os() << "\n=== Languages ===\n";
             c.getFeatures().displayLanguages();
             const int index = io.readInt("Index to remove (0 to cancel): ", 0,
                                          static_cast<int>(c.getFeatures().getLanguages().size()));
             if (index == 0) continue;
             if (c.getFeatures().removeLanguage(index))
-                std::cout << "Language removed.\n";
+                io.os() << "Language removed.\n";
             else
-                std::cout << "Invalid index.\n";
+                io.os() << "Invalid index.\n";
         }
         else if (choice == 11) // Toggle inspiration
         {
             c.toggleInspiration();
-            std::cout << "\n=== Inspiration ===\n";
-            std::cout << (c.getInspiration() ? "Yes" : "No") << "\n";
+            io.os() << "\n=== Inspiration ===\n";
+            io.os() << (c.getInspiration() ? "Yes" : "No") << "\n";
         }
     } while (choice != 0);
 }

@@ -28,6 +28,9 @@ public:
     void manageGlobalSpells();
     bool hasCharacters() const;
 
+    // Read-only view of the loaded roster.
+    const std::vector<Character>& getCharacters() const;
+
     // Input validation now lives in ConsoleIO / namespace Validate.
     // Lists the loaded characters and prompts for one. Returns a 0-based index,
     // or -1 if the list is empty or the user chose 0 (Back). Replaces the

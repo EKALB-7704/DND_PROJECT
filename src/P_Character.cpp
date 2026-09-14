@@ -419,6 +419,7 @@ void Character::addItem(std::unique_ptr<Item> item) {
 }
 
 Inventory& Character::getInventory() { return inventory; }
+const Inventory& Character::getInventory() const { return inventory; }
 
 void Character::removeItem(int index) {
     if (index == equippedArmorIndex)       equippedArmorIndex = -1;
@@ -539,6 +540,7 @@ void Character::setStats(int AS, int Ability)
 //-----------------------------------------------------//
 // Wallet
 Wallet& Character::getWallet() { return wallet; }
+const Wallet& Character::getWallet() const { return wallet; }
 
 void Character::showCurrency() const {
     std::cout << "\n=== Currency ===\n";
@@ -587,7 +589,17 @@ Spellbook& Character::getSpellbook()
     return spellbook;
 }
 
+const Spellbook& Character::getSpellbook() const
+{
+    return spellbook;
+}
+
 SpellSlots& Character::getSpellSlots()
+{
+    return spellSlots;
+}
+
+const SpellSlots& Character::getSpellSlots() const
 {
     return spellSlots;
 }

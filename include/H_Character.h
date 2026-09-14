@@ -157,6 +157,7 @@ public:
     void showInventory() const;
     void clearInventory();
     Inventory& getInventory();
+    const Inventory& getInventory() const;
 
     // AC
     int getAC() const;
@@ -171,11 +172,14 @@ public:
 
     // Spellbook
     Spellbook& getSpellbook();
+    const Spellbook& getSpellbook() const;
     SpellSlots& getSpellSlots();
+    const SpellSlots& getSpellSlots() const;
     void showSpells() const;
 
     // Wallet
     Wallet& getWallet();
+    const Wallet& getWallet() const;
     void showCurrency() const;
 
     // Features and skills
