@@ -31,7 +31,7 @@ DND_PROJECT/
 │                      # section (P_EditHealth, P_EditSpells, P_ManageInventory,
 │                      # P_ManageFeatures, P_EditDetails, P_GlobalSpells)
 ├── include/           # Header files and custom exception hierarchy
-├── tests/             # Google Test unit tests (12 test suites)
+├── tests/             # Google Test unit tests (13 test suites)
 ├── data/
 │   ├── SpellBook.txt  # Global spell registry
 │   └── characters/    # Per-character save directories
@@ -85,12 +85,18 @@ Characters are saved under `data/characters/<name>/` with one file per subsystem
 
 | File | Contents |
 |------|----------|
-| `character.txt` | Core attributes (name, race, class, ability scores, HP, etc.) |
+| `character.txt` | Version header, then core attributes (name, race, class, ability scores, HP, etc.) |
 | `features.txt` | Feats, racial traits, languages, skills, saving throws |
 | `inventory.txt` | Items with type tags for polymorphic reconstruction |
 | `spells.txt` | Known spells |
 | `spellslots.txt` | Spell slot availability per level |
 | `wallet.txt` | Currency denominations |
+
+`character.txt` starts with a version line, `#DNDCHAR 1`. Files saved before
+versioning have no header, are read as version 0, and are rewritten with one
+the next time the character is saved. Fields are validated on load: values
+outside their legal range are repaired to a safe default and reported, and a
+malformed file is refused rather than partially read.
 
 `data/characters/` is intentionally **not** tracked in git — it is runtime state
 written by the app, so committing it made every play session show up as a working
@@ -100,7 +106,7 @@ and is loaded by relative path, so run the program from the repository root.
 
 ## Tests
 
-Twelve test suites cover the full system:
+Thirteen test suites cover the full system:
 
 - `test_character` — character creation, stats, HP, death saves
 - `test_inventory` — item management and equipping
@@ -114,6 +120,7 @@ Twelve test suites cover the full system:
 - `test_colours` — terminal color functionality
 - `test_consoleio` — input parsing, range/format validation, and EOF handling
 - `test_manager_menus` — menu flows driven end to end from a scripted stream
+- `test_save_format` — save versioning, legacy reads, field repair, malformed files
 
 ## Future Plans
 
@@ -124,7 +131,9 @@ Current focus is a codebase cleanup pass before any new features:
    `ConsoleIO`; no raw `std::cin` remains in `src/`
 3. ~~Split `CharacterManager` into per-section menu units~~ **done** — eight
    files, none over 220 lines; `editCharacter` is now a 54-line dispatcher
-4. Add a version header to the character save format, with validation on load
+4. ~~Add a version header to the character save format, with validation on
+   load~~ **done** — `#DNDCHAR <n>`; headerless files read as v0 and upgrade
+   on next save; out-of-range fields are repaired and reported
 
 Planned features, once the above lands:
 
