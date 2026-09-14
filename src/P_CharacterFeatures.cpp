@@ -1,4 +1,6 @@
 #include "H_CharacterFeatures.h"
+#include "H_SaveFormat.h"
+#include "H_DndExceptions.h"
 #include <algorithm>
 #include <cctype>
 #include <iostream>
@@ -333,6 +335,7 @@ void CharacterFeatures::displaySkills(int strength, int dexterity, int constitut
 void CharacterFeatures::save(std::ofstream& file) const
 {
     // Save the two free-text lists first, then each skill's current rank.
+    SaveFormat::writeHeader(file, SaveFormat::kFeaturesTag);
     file << feats.size() << "\n";
     for (const auto& feat : feats)
     {
@@ -366,38 +369,42 @@ void CharacterFeatures::load(std::ifstream& file)
     feats.clear();
     racialTraits.clear();
 
-    int count = 0;
-    file >> count;
-    file.ignore();
-    for (int i = 0; i < count; i++)
+    SaveFormat::readHeader(file, SaveFormat::kFeaturesTag, "features.txt");
+
+    std::string line;
+
+    const int featCount = SaveFormat::readCount(file, "features.txt (feats)");
+    for (int i = 0; i < featCount; i++)
     {
-        std::string feat;
-        std::getline(file, feat);
-        addFeat(feat);
+        if (!SaveFormat::readLine(file, line))
+            throw LoadError("features.txt ended mid-way through the feat list");
+        addFeat(line);
     }
 
-    file >> count;
-    file.ignore();
-    for (int i = 0; i < count; i++)
+    const int traitCount = SaveFormat::readCount(file, "features.txt (racial traits)");
+    for (int i = 0; i < traitCount; i++)
     {
-        std::string trait;
-        std::getline(file, trait);
-        addRacialTrait(trait);
+        if (!SaveFormat::readLine(file, line))
+            throw LoadError("features.txt ended mid-way through the racial trait list");
+        addRacialTrait(line);
     }
 
-    int skillCount = 0;
-    file >> skillCount;
-    file.ignore();
+    const int skillCount = SaveFormat::readCount(file, "features.txt (skills)");
     for (int i = 0; i < skillCount; i++)
     {
-        std::string name;
-        std::string ability;
-        int rankValue = 0;
+        std::string name, ability, rankLine;
+        if (!SaveFormat::readLine(file, name) ||
+            !SaveFormat::readLine(file, ability) ||
+            !SaveFormat::readLine(file, rankLine))
+        {
+            throw LoadError("features.txt ended mid-way through the skill list");
+        }
 
-        std::getline(file, name);
-        std::getline(file, ability);
-        file >> rankValue;
-        file.ignore();
+        int rankValue = 0;
+        if (!SaveFormat::parseWholeInt(rankLine, rankValue))
+            throw LoadError("unreadable skill rank in features.txt: \"" + rankLine + "\"");
+        // Ranks are None/Proficient/Expertise; anything else means no training.
+        if (rankValue < 0 || rankValue > 2) rankValue = 0;
 
         SkillEntry* skill = findSkill(name);
         if (skill != nullptr)
@@ -407,21 +414,33 @@ void CharacterFeatures::load(std::ifstream& file)
             skill->rank = static_cast<SkillRank>(rankValue);
         }
     }
-    for (auto& s : savingThrows) {
+
+    // One flag per saving throw, in the fixed order built by the constructor.
+    for (auto& sv : savingThrows)
+    {
+        if (!SaveFormat::readLine(file, line)) break;
         int val = 0;
-        file >> val;
-        file.ignore();
-        s.proficient = (val != 0);
+        if (!SaveFormat::parseWholeInt(line, val))
+            throw LoadError("unreadable saving throw flag in features.txt");
+        sv.proficient = (val != 0);
     }
 
+    // Languages were added after the original format, so a file that stops
+    // here is a valid older save rather than a truncated one.
     languages.clear();
-    int langCount = 0;
-    if (file >> langCount) {
-        file.ignore();
-        for (int i = 0; i < langCount; i++) {
-            std::string lang;
-            std::getline(file, lang);
-            addLanguage(lang);
+    if (SaveFormat::readLine(file, line))
+    {
+        int langCount = 0;
+        if (!SaveFormat::parseWholeInt(line, langCount) ||
+            langCount < 0 || langCount > SaveFormat::kMaxRecords)
+        {
+            throw LoadError("unreadable language count in features.txt");
+        }
+        for (int i = 0; i < langCount; i++)
+        {
+            if (!SaveFormat::readLine(file, line))
+                throw LoadError("features.txt ended mid-way through the language list");
+            addLanguage(line);
         }
     }
 }

@@ -1,4 +1,8 @@
 #include "H_SpellSlots.h"
+#include "H_SaveFormat.h"
+#include "H_DndExceptions.h"
+#include <string>
+#include <vector>
 #include <iostream>
 #include <algorithm>
 
@@ -105,6 +109,7 @@ void SpellSlots::displaySlots() const
 void SpellSlots::save(std::ofstream& file) const
 {
     // Save both max and current counts so partially-spent slot pools persist.
+    SaveFormat::writeHeader(file, SaveFormat::kSpellSlotsTag);
     file << maxSlots.size() << "\n";
     for (const auto& slot : maxSlots)
     {
@@ -119,21 +124,24 @@ void SpellSlots::load(std::ifstream& file)
     maxSlots.clear();
     currentSlots.clear();
 
-    int count = 0;
-    file >> count;
-    file.ignore();
+    SaveFormat::readHeader(file, SaveFormat::kSpellSlotsTag, "spellslots.txt");
 
+    const int count = SaveFormat::readCount(file, "spellslots.txt");
+
+    std::string line;
+    std::vector<int> f;
     for (int i = 0; i < count; i++)
     {
-        int level = 0;
-        int max = 0;
-        int current = 0;
+        if (!SaveFormat::readLine(file, line) || !SaveFormat::parseInts(line, 3, f))
+            throw LoadError("spell slot entry unreadable in spellslots.txt");
 
-        file >> level >> max >> current;
-        file.ignore();
+        // Spell levels run 1-9; anything else is not a slot pool we can hold.
+        if (f[0] < 1 || f[0] > 9) continue;
+        const int max = f[1] < 0 ? 0 : f[1];
+        const int current = f[2] < 0 ? 0 : (f[2] > max ? max : f[2]);
 
         // Load max first, then apply the saved current count for that level.
-        setSlots(level, max);
-        setCurrentSlots(level, current);
+        setSlots(f[0], max);
+        setCurrentSlots(f[0], current);
     }
 }

@@ -4,6 +4,7 @@
 #include "H_Gear.h"
 #include "H_DndExceptions.h"
 #include "H_Validate.h"
+#include "H_SaveFormat.h"
 #include <iostream>
 #include <filesystem>
 #include <sstream>
@@ -50,8 +51,8 @@ void Character::saveToDirectory(const std::string& dir) const {
     {
         std::ofstream f((fs::path(dir) / "character.txt").string());
         if (!f) throw SaveError("cannot open character.txt in " + dir);
-        f << "#DNDCHAR " << kSaveFormatVersion << "\n"
-          << name << "\n" << race << "\n" << characterClass << "\n"
+        SaveFormat::writeHeader(f, SaveFormat::kCharacterTag);
+        f << name << "\n" << race << "\n" << characterClass << "\n"
           << background << "\n" << alignment << "\n"
           << level << " " << age << " " << weight << "\n"
           << current_hp << " " << max_hp << " " << temp_hp << "\n"
@@ -93,57 +94,6 @@ void Character::saveToDirectory(const std::string& dir) const {
 }
 
 // Reconstruct a Character from a previously saved directory.
-namespace {
-
-// Parses a whole integer, rejecting trailing junk. Mirrors ConsoleIO's rule:
-// a value that would be refused at a prompt is refused from a file too.
-bool parseWholeInt(const std::string& text, int& out)
-{
-    const std::string t = Validate::trim(text);
-    if (t.empty()) return false;
-    try
-    {
-        size_t consumed = 0;
-        const int value = std::stoi(t, &consumed);
-        if (consumed != t.size()) return false;
-        out = value;
-        return true;
-    }
-    catch (const std::exception&) { return false; }
-}
-
-// Splits a line into integer fields. Returns false if the count differs or any
-// field fails to parse -- previously a short line left later fields holding
-// whatever the stream last produced.
-bool parseInts(const std::string& line, int count, std::vector<int>& out)
-{
-    std::istringstream ss(line);
-    out.clear();
-    std::string tok;
-    while (ss >> tok)
-    {
-        int v = 0;
-        if (!parseWholeInt(tok, v)) return false;
-        out.push_back(v);
-    }
-    return static_cast<int>(out.size()) == count;
-}
-
-// Clamps `value` into [lo, hi]; records a note if it had to change.
-int repairRange(int value, int lo, int hi, int fallback,
-                const std::string& field, std::vector<std::string>* repairs)
-{
-    if (value >= lo && value <= hi) return value;
-    if (repairs)
-    {
-        repairs->push_back(field + " was " + std::to_string(value) +
-                           ", outside " + std::to_string(lo) + "-" + std::to_string(hi) +
-                           "; set to " + std::to_string(fallback));
-    }
-    return fallback;
-}
-
-} // namespace
 
 Character Character::loadFromDirectory(const std::string& dir,
                                        std::vector<std::string>* repairs)
@@ -166,21 +116,14 @@ Character Character::loadFromDirectory(const std::string& dir,
 
     // Detect the format version. Files written before versioning have no
     // header and begin directly with the character name.
+    const std::string what = dir + "/character.txt";
     int version = 0;
     size_t at = 0;
-    if (!lines.empty() && lines[0].rfind("#DNDCHAR", 0) == 0)
     {
-        if (!parseWholeInt(lines[0].substr(8), version))
-        {
-            throw LoadError("unreadable version header in " + dir + "/character.txt");
-        }
-        at = 1;
-    }
-    if (version > kSaveFormatVersion)
-    {
-        throw LoadError("character.txt in " + dir + " is version " +
-                        std::to_string(version) + ", newer than this build supports (" +
-                        std::to_string(kSaveFormatVersion) + ")");
+        std::istringstream head(lines.empty() ? std::string() : lines[0] + "\n");
+        version = SaveFormat::readHeader(head, SaveFormat::kCharacterTag, what,
+                                         kSaveFormatVersion);
+        if (version > 0) at = 1;
     }
     // An older-but-valid file is not damaged -- it is simply written in an
     // earlier layout and is upgraded the next time it is saved. Only genuine
@@ -205,19 +148,19 @@ Character Character::loadFromDirectory(const std::string& dir,
 
     std::vector<int> f;
 
-    if (!parseInts(nextLine(), 3, f)) throw LoadError("bad level/age/weight line in " + dir);
-    const int lvl    = repairRange(f[0], 1, 20, 1, "level", repairs);
-    const int age    = repairRange(f[1], 0, 100000, 0, "age", repairs);
-    const int weight = repairRange(f[2], 0, 100000, 0, "weight", repairs);
+    if (!SaveFormat::parseInts(nextLine(), 3, f)) throw LoadError("bad level/age/weight line in " + dir);
+    const int lvl    = SaveFormat::repairRange(f[0], 1, 20, 1, "level", repairs);
+    const int age    = SaveFormat::repairRange(f[1], 0, 100000, 0, "age", repairs);
+    const int weight = SaveFormat::repairRange(f[2], 0, 100000, 0, "weight", repairs);
 
-    if (!parseInts(nextLine(), 3, f)) throw LoadError("bad hp line in " + dir);
-    const int m_hp = repairRange(f[1], 1, 100000, 1, "max hp", repairs);
-    const int c_hp = repairRange(f[0], 0, m_hp, m_hp, "current hp", repairs);
-    const int t_hp = repairRange(f[2], 0, 100000, 0, "temp hp", repairs);
+    if (!SaveFormat::parseInts(nextLine(), 3, f)) throw LoadError("bad hp line in " + dir);
+    const int m_hp = SaveFormat::repairRange(f[1], 1, 100000, 1, "max hp", repairs);
+    const int c_hp = SaveFormat::repairRange(f[0], 0, m_hp, m_hp, "current hp", repairs);
+    const int t_hp = SaveFormat::repairRange(f[2], 0, 100000, 0, "temp hp", repairs);
 
-    if (!parseInts(nextLine(), 2, f)) throw LoadError("bad death save line in " + dir);
-    const int deathSuccesses = repairRange(f[0], 0, 3, 0, "death save successes", repairs);
-    const int deathFailures  = repairRange(f[1], 0, 3, 0, "death save failures", repairs);
+    if (!SaveFormat::parseInts(nextLine(), 2, f)) throw LoadError("bad death save line in " + dir);
+    const int deathSuccesses = SaveFormat::repairRange(f[0], 0, 3, 0, "death save successes", repairs);
+    const int deathFailures  = SaveFormat::repairRange(f[1], 0, 3, 0, "death save failures", repairs);
 
     // Hit dice: the field that silently held "0" in saves written by older builds.
     std::string h_dice;
@@ -235,35 +178,35 @@ Character Character::loadFromDirectory(const std::string& dir,
             }
             h_dice = "d8";
         }
-        if (!parseWholeInt(numTok, h_dice_num)) h_dice_num = lvl;
-        h_dice_num = repairRange(h_dice_num, 0, lvl, lvl, "hit dice remaining", repairs);
+        if (!SaveFormat::parseWholeInt(numTok, h_dice_num)) h_dice_num = lvl;
+        h_dice_num = SaveFormat::repairRange(h_dice_num, 0, lvl, lvl, "hit dice remaining", repairs);
     }
 
-    if (!parseInts(nextLine(), 8, f)) throw LoadError("bad ability score line in " + dir);
-    const int str  = repairRange(f[0], 1, 30, 10, "strength", repairs);
-    const int dex  = repairRange(f[1], 1, 30, 10, "dexterity", repairs);
-    const int con  = repairRange(f[2], 1, 30, 10, "constitution", repairs);
-    const int intl = repairRange(f[3], 1, 30, 10, "intelligence", repairs);
-    const int wis  = repairRange(f[4], 1, 30, 10, "wisdom", repairs);
-    const int cha  = repairRange(f[5], 1, 30, 10, "charisma", repairs);
-    const int init = repairRange(f[6], -10, 20, 0, "initiative", repairs);
+    if (!SaveFormat::parseInts(nextLine(), 8, f)) throw LoadError("bad ability score line in " + dir);
+    const int str  = SaveFormat::repairRange(f[0], 1, 30, 10, "strength", repairs);
+    const int dex  = SaveFormat::repairRange(f[1], 1, 30, 10, "dexterity", repairs);
+    const int con  = SaveFormat::repairRange(f[2], 1, 30, 10, "constitution", repairs);
+    const int intl = SaveFormat::repairRange(f[3], 1, 30, 10, "intelligence", repairs);
+    const int wis  = SaveFormat::repairRange(f[4], 1, 30, 10, "wisdom", repairs);
+    const int cha  = SaveFormat::repairRange(f[5], 1, 30, 10, "charisma", repairs);
+    const int init = SaveFormat::repairRange(f[6], -10, 20, 0, "initiative", repairs);
     // Proficiency is +2 at level 1 and never lower; +6 is the level-20 cap.
-    const int prof = repairRange(f[7], 2, 6, 2, "proficiency", repairs);
+    const int prof = SaveFormat::repairRange(f[7], 2, 6, 2, "proficiency", repairs);
 
     int armorIdx = -1, shieldIdx = -1, insp = 0, spd = 30;
-    if (at < lines.size() && parseInts(lines[at], 2, f))
+    if (at < lines.size() && SaveFormat::parseInts(lines[at], 2, f))
     {
-        armorIdx = repairRange(f[0], -1, 100000, -1, "equipped armor index", repairs);
-        shieldIdx = repairRange(f[1], -1, 100000, -1, "equipped shield index", repairs);
+        armorIdx = SaveFormat::repairRange(f[0], -1, 100000, -1, "equipped armor index", repairs);
+        shieldIdx = SaveFormat::repairRange(f[1], -1, 100000, -1, "equipped shield index", repairs);
         at++;
     }
-    if (at < lines.size() && parseWholeInt(lines[at], insp)) at++;
-    if (at < lines.size() && parseWholeInt(lines[at], spd)) at++;
-    spd = repairRange(spd, 0, 1000, 30, "speed", repairs);
+    if (at < lines.size() && SaveFormat::parseWholeInt(lines[at], insp)) at++;
+    if (at < lines.size() && SaveFormat::parseWholeInt(lines[at], spd)) at++;
+    spd = SaveFormat::repairRange(spd, 0, 1000, 30, "speed", repairs);
 
     std::vector<std::string> loadedConditions;
     int conditionCount = 0;
-    if (at < lines.size() && parseWholeInt(lines[at], conditionCount))
+    if (at < lines.size() && SaveFormat::parseWholeInt(lines[at], conditionCount))
     {
         at++;
         for (int i = 0; i < conditionCount && at < lines.size(); i++)

@@ -1,4 +1,5 @@
 #include "H_SpellBook.h"
+#include "H_SaveFormat.h"
 #include "H_DndExceptions.h"
 #include <fstream>
 
@@ -91,6 +92,7 @@ void Spellbook::saveSpellbook(const std::string& filename) const
     if (!outFile)
         throw SaveError("cannot open '" + filename + "' for writing");
 
+    SaveFormat::writeHeader(outFile, SaveFormat::kSpellbookTag);
     outFile << knownSpells.size() << "\n";
 
     for (const auto& spell : knownSpells)
@@ -112,9 +114,9 @@ void Spellbook::loadSpellbook(const std::string& filename)
 
     knownSpells.clear();
 
-    int count;
-    inFile >> count;
-    inFile.ignore();
+    SaveFormat::readHeader(inFile, SaveFormat::kSpellbookTag, filename);
+
+    const int count = SaveFormat::readCount(inFile, filename);
 
     for (int i = 0; i < count; i++)
     {

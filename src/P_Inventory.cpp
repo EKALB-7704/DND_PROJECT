@@ -1,4 +1,5 @@
 #include "H_Inventory.h"
+#include "H_SaveFormat.h"
 #include "H_DndExceptions.h"
 #include <iostream>
 
@@ -32,6 +33,7 @@ const Item& Inventory::getItem(int index) const {
 }
 
 void Inventory::save(std::ofstream& file) const {
+    SaveFormat::writeHeader(file, SaveFormat::kInventoryTag);
     file << items.size() << "\n";
     for (const auto& item : items) {
         item->save(file);
@@ -40,10 +42,11 @@ void Inventory::save(std::ofstream& file) const {
 
 void Inventory::load(std::ifstream& file) {
     items.clear();
-    int count;
-    if (!(file >> count))
-        throw LoadError("inventory count unreadable - file may be corrupt");
-    file.ignore();
+    SaveFormat::readHeader(file, SaveFormat::kInventoryTag, "inventory.txt");
+
+    // Bounded: a corrupt count used to drive the item factory off the end
+    // of the file.
+    const int count = SaveFormat::readCount(file, "inventory.txt");
     for (int i = 0; i < count; i++) {
         items.push_back(Item::loadFromFile(file));
     }

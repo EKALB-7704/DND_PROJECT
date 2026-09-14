@@ -40,6 +40,7 @@ set(LIB_SOURCES
     src/P_Colours.cpp
     src/P_ConsoleIO.cpp
     src/P_Validate.cpp
+    src/P_SaveFormat.cpp
 )
 
 # Static library that both the game exe and the test exe link against

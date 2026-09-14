@@ -1,4 +1,7 @@
 #include "H_Wallet.h"
+#include "H_SaveFormat.h"
+#include <string>
+#include <vector>
 #include "H_DndExceptions.h"
 #include <iostream>
 
@@ -38,11 +41,22 @@ void Wallet::display() const {
 }
 
 void Wallet::save(std::ofstream& file) const {
+    SaveFormat::writeHeader(file, SaveFormat::kWalletTag);
     file << copper << " " << silver << " " << electrum << " " << gold << " " << platinum << "\n";
 }
 
 void Wallet::load(std::ifstream& file) {
-    if (!(file >> copper >> silver >> electrum >> gold >> platinum))
+    SaveFormat::readHeader(file, SaveFormat::kWalletTag, "wallet.txt");
+
+    std::string line;
+    std::vector<int> f;
+    if (!SaveFormat::readLine(file, line) || !SaveFormat::parseInts(line, 5, f))
         throw LoadError("wallet data unreadable - file may be corrupt");
-    file.ignore();
+
+    // A negative purse is not a legal state; clamp rather than store it.
+    copper   = f[0] < 0 ? 0 : f[0];
+    silver   = f[1] < 0 ? 0 : f[1];
+    electrum = f[2] < 0 ? 0 : f[2];
+    gold     = f[3] < 0 ? 0 : f[3];
+    platinum = f[4] < 0 ? 0 : f[4];
 }
