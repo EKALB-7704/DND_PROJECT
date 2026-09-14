@@ -27,9 +27,11 @@ A command-line D&D character management system written in C++. Tracks everything
 
 ```
 DND_PROJECT/
-├── src/               # Source files (character, inventory, spells, etc.)
+├── src/               # Source files; the character editor is split by menu
+│                      # section (P_EditHealth, P_EditSpells, P_ManageInventory,
+│                      # P_ManageFeatures, P_EditDetails, P_GlobalSpells)
 ├── include/           # Header files and custom exception hierarchy
-├── tests/             # Google Test unit tests (11 test suites)
+├── tests/             # Google Test unit tests (12 test suites)
 ├── data/
 │   ├── SpellBook.txt  # Global spell registry
 │   └── characters/    # Per-character save directories
@@ -98,7 +100,7 @@ and is loaded by relative path, so run the program from the repository root.
 
 ## Tests
 
-Eleven test suites cover the full system:
+Twelve test suites cover the full system:
 
 - `test_character` — character creation, stats, HP, death saves
 - `test_inventory` — item management and equipping
@@ -111,6 +113,7 @@ Eleven test suites cover the full system:
 - `test_persistence` — file save/load round-tripping
 - `test_colours` — terminal color functionality
 - `test_consoleio` — input parsing, range/format validation, and EOF handling
+- `test_manager_menus` — menu flows driven end to end from a scripted stream
 
 ## Future Plans
 
@@ -119,8 +122,8 @@ Current focus is a codebase cleanup pass before any new features:
 1. ~~Repo hygiene — untrack build artifacts and runtime save data~~ **done**
 2. ~~Consolidate console input behind one validated I/O layer~~ **done** — see
    `ConsoleIO`; no raw `std::cin` remains in `src/`
-3. Split `CharacterManager` (now ~1140 lines) into per-section menu units,
-   using the `ConsoleIO` seam to test the menu flows
+3. ~~Split `CharacterManager` into per-section menu units~~ **done** — eight
+   files, none over 220 lines; `editCharacter` is now a 54-line dispatcher
 4. Add a version header to the character save format, with validation on load
 
 Planned features, once the above lands:
