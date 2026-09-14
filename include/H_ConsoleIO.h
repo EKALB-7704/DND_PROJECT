@@ -8,19 +8,7 @@
 
 #include "H_DndExceptions.h" // EndOfInput
 
-// Reusable validators for free-form text input.
-// Free functions so they can be tested and composed without a CharacterManager.
-namespace Validate {
-    // Printable, non-empty, and contains at least one letter.
-    bool isText(const std::string& input);
-
-    // Printable, non-empty, and not entirely whitespace.
-    // Looser than isText: allows digits and symbols (e.g. "Gimli II").
-    bool isName(const std::string& input);
-
-    // Hit dice format: 'd' followed by at least one digit (e.g. d6, d12, d100).
-    bool isHitDice(const std::string& input);
-}
+#include "H_Validate.h"  // Validate::isText / isName / isHitDice
 
 // Wraps all console reads behind one validated interface.
 //

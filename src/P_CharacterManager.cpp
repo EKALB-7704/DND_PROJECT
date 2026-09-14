@@ -183,8 +183,19 @@ void CharacterManager::loadAll() {
         for (const auto& entry : fs::directory_iterator(base)) {
             if (entry.is_directory() && fs::exists(entry.path() / "character.txt")) {
                 try {
-                    characters.push_back(Character::loadFromDirectory(entry.path().string()));
+                    // Repairs are surfaced rather than applied silently, so a
+                    // character that loads with bad data is visibly flagged.
+                    std::vector<std::string> repairs;
+                    characters.push_back(
+                        Character::loadFromDirectory(entry.path().string(), &repairs));
                     loaded++;
+                    if (!repairs.empty()) {
+                        io.os() << "Repaired " << entry.path().filename().string() << ":\n";
+                        for (const auto& note : repairs) {
+                            io.os() << "  - " << note << "\n";
+                        }
+                        io.os() << "  Save this character to write the corrected data.\n";
+                    }
                 } catch (const LoadError& e) {
                     io.os() << "Skipped " << entry.path().filename().string()
                               << ": " << e.what() << "\n";

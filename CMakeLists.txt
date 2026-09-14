@@ -39,6 +39,7 @@ set(LIB_SOURCES
     src/P_Wallet.cpp
     src/P_Colours.cpp
     src/P_ConsoleIO.cpp
+    src/P_Validate.cpp
 )
 
 # Static library that both the game exe and the test exe link against

@@ -3,8 +3,11 @@
 #include "H_Armor.h"
 #include "H_Gear.h"
 #include "H_DndExceptions.h"
+#include "H_Validate.h"
 #include <iostream>
 #include <filesystem>
+#include <sstream>
+#include <vector>
 
 // Constructor
 Character::Character(std::string n, std::string r, std::string c, std::string b, std::string a,
@@ -47,7 +50,8 @@ void Character::saveToDirectory(const std::string& dir) const {
     {
         std::ofstream f((fs::path(dir) / "character.txt").string());
         if (!f) throw SaveError("cannot open character.txt in " + dir);
-        f << name << "\n" << race << "\n" << characterClass << "\n"
+        f << "#DNDCHAR " << kSaveFormatVersion << "\n"
+          << name << "\n" << race << "\n" << characterClass << "\n"
           << background << "\n" << alignment << "\n"
           << level << " " << age << " " << weight << "\n"
           << current_hp << " " << max_hp << " " << temp_hp << "\n"
@@ -89,47 +93,183 @@ void Character::saveToDirectory(const std::string& dir) const {
 }
 
 // Reconstruct a Character from a previously saved directory.
-Character Character::loadFromDirectory(const std::string& dir) {
+namespace {
+
+// Parses a whole integer, rejecting trailing junk. Mirrors ConsoleIO's rule:
+// a value that would be refused at a prompt is refused from a file too.
+bool parseWholeInt(const std::string& text, int& out)
+{
+    const std::string t = Validate::trim(text);
+    if (t.empty()) return false;
+    try
+    {
+        size_t consumed = 0;
+        const int value = std::stoi(t, &consumed);
+        if (consumed != t.size()) return false;
+        out = value;
+        return true;
+    }
+    catch (const std::exception&) { return false; }
+}
+
+// Splits a line into integer fields. Returns false if the count differs or any
+// field fails to parse -- previously a short line left later fields holding
+// whatever the stream last produced.
+bool parseInts(const std::string& line, int count, std::vector<int>& out)
+{
+    std::istringstream ss(line);
+    out.clear();
+    std::string tok;
+    while (ss >> tok)
+    {
+        int v = 0;
+        if (!parseWholeInt(tok, v)) return false;
+        out.push_back(v);
+    }
+    return static_cast<int>(out.size()) == count;
+}
+
+// Clamps `value` into [lo, hi]; records a note if it had to change.
+int repairRange(int value, int lo, int hi, int fallback,
+                const std::string& field, std::vector<std::string>* repairs)
+{
+    if (value >= lo && value <= hi) return value;
+    if (repairs)
+    {
+        repairs->push_back(field + " was " + std::to_string(value) +
+                           ", outside " + std::to_string(lo) + "-" + std::to_string(hi) +
+                           "; set to " + std::to_string(fallback));
+    }
+    return fallback;
+}
+
+} // namespace
+
+Character Character::loadFromDirectory(const std::string& dir,
+                                       std::vector<std::string>* repairs)
+{
     namespace fs = std::filesystem;
 
-    std::string name, race, characterClass, background, alignment, h_dice;
-    int lvl = 1, age = 0, weight = 0;
-    int c_hp = 0, m_hp = 0, t_hp = 0, h_dice_num = 0;
-    int deathSuccesses = 0, deathFailures = 0;
-    int str = 10, dex = 10, con = 10, intl = 10, wis = 10, cha = 10, init = 0, prof = 2;
-    int armorIdx = -1, shieldIdx = -1;
-    int insp = 0, spd = 30;
-    int conditionCount = 0;
-    std::vector<std::string> loadedConditions;
-
+    // Read the whole file up front so fields can be validated per line rather
+    // than streamed into variables that keep stale values when a read fails.
+    std::vector<std::string> lines;
     {
         std::ifstream f((fs::path(dir) / "character.txt").string());
         if (!f) throw LoadError("cannot open character.txt in " + dir);
-        std::getline(f, name);
-        std::getline(f, race);
-        std::getline(f, characterClass);
-        std::getline(f, background);
-        std::getline(f, alignment);
-        f >> lvl >> age >> weight;
-        f >> c_hp >> m_hp >> t_hp;
-        f >> deathSuccesses >> deathFailures;
-        f >> h_dice >> h_dice_num;
-        f >> str >> dex >> con >> intl >> wis >> cha >> init >> prof;
-        f >> armorIdx >> shieldIdx;
-        f >> insp;
-        f >> spd;
-        if (f >> conditionCount)
+        std::string line;
+        while (std::getline(f, line))
         {
-            f.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            for (int i = 0; i < conditionCount; i++)
+            if (!line.empty() && line.back() == '\r') line.pop_back();
+            lines.push_back(line);
+        }
+    }
+
+    // Detect the format version. Files written before versioning have no
+    // header and begin directly with the character name.
+    int version = 0;
+    size_t at = 0;
+    if (!lines.empty() && lines[0].rfind("#DNDCHAR", 0) == 0)
+    {
+        if (!parseWholeInt(lines[0].substr(8), version))
+        {
+            throw LoadError("unreadable version header in " + dir + "/character.txt");
+        }
+        at = 1;
+    }
+    if (version > kSaveFormatVersion)
+    {
+        throw LoadError("character.txt in " + dir + " is version " +
+                        std::to_string(version) + ", newer than this build supports (" +
+                        std::to_string(kSaveFormatVersion) + ")");
+    }
+    // An older-but-valid file is not damaged -- it is simply written in an
+    // earlier layout and is upgraded the next time it is saved. Only genuine
+    // field problems are reported as repairs.
+
+    // Both v0 and v1 share the same field layout; v1 only adds the header.
+    // A future v2 would branch here rather than reinterpreting v1 positions.
+    if (lines.size() < at + 9)
+    {
+        throw LoadError("character.txt in " + dir + " is truncated");
+    }
+
+    auto nextLine = [&]() -> const std::string& { return lines[at++]; };
+
+    const std::string name           = nextLine();
+    const std::string race           = nextLine();
+    const std::string characterClass = nextLine();
+    const std::string background     = nextLine();
+    const std::string alignment      = nextLine();
+
+    if (!Validate::isName(name)) throw LoadError("character.txt in " + dir + " has no name");
+
+    std::vector<int> f;
+
+    if (!parseInts(nextLine(), 3, f)) throw LoadError("bad level/age/weight line in " + dir);
+    const int lvl    = repairRange(f[0], 1, 20, 1, "level", repairs);
+    const int age    = repairRange(f[1], 0, 100000, 0, "age", repairs);
+    const int weight = repairRange(f[2], 0, 100000, 0, "weight", repairs);
+
+    if (!parseInts(nextLine(), 3, f)) throw LoadError("bad hp line in " + dir);
+    const int m_hp = repairRange(f[1], 1, 100000, 1, "max hp", repairs);
+    const int c_hp = repairRange(f[0], 0, m_hp, m_hp, "current hp", repairs);
+    const int t_hp = repairRange(f[2], 0, 100000, 0, "temp hp", repairs);
+
+    if (!parseInts(nextLine(), 2, f)) throw LoadError("bad death save line in " + dir);
+    const int deathSuccesses = repairRange(f[0], 0, 3, 0, "death save successes", repairs);
+    const int deathFailures  = repairRange(f[1], 0, 3, 0, "death save failures", repairs);
+
+    // Hit dice: the field that silently held "0" in saves written by older builds.
+    std::string h_dice;
+    int h_dice_num = lvl;
+    {
+        std::istringstream ss(nextLine());
+        std::string numTok;
+        ss >> h_dice >> numTok;
+        if (!Validate::isHitDice(h_dice))
+        {
+            if (repairs)
             {
-                std::string condition;
-                std::getline(f, condition);
-                if (!condition.empty())
-                {
-                    loadedConditions.push_back(condition);
-                }
+                repairs->push_back("hit dice was \"" + h_dice +
+                                   "\", not a valid dN value; set to d8");
             }
+            h_dice = "d8";
+        }
+        if (!parseWholeInt(numTok, h_dice_num)) h_dice_num = lvl;
+        h_dice_num = repairRange(h_dice_num, 0, lvl, lvl, "hit dice remaining", repairs);
+    }
+
+    if (!parseInts(nextLine(), 8, f)) throw LoadError("bad ability score line in " + dir);
+    const int str  = repairRange(f[0], 1, 30, 10, "strength", repairs);
+    const int dex  = repairRange(f[1], 1, 30, 10, "dexterity", repairs);
+    const int con  = repairRange(f[2], 1, 30, 10, "constitution", repairs);
+    const int intl = repairRange(f[3], 1, 30, 10, "intelligence", repairs);
+    const int wis  = repairRange(f[4], 1, 30, 10, "wisdom", repairs);
+    const int cha  = repairRange(f[5], 1, 30, 10, "charisma", repairs);
+    const int init = repairRange(f[6], -10, 20, 0, "initiative", repairs);
+    // Proficiency is +2 at level 1 and never lower; +6 is the level-20 cap.
+    const int prof = repairRange(f[7], 2, 6, 2, "proficiency", repairs);
+
+    int armorIdx = -1, shieldIdx = -1, insp = 0, spd = 30;
+    if (at < lines.size() && parseInts(lines[at], 2, f))
+    {
+        armorIdx = repairRange(f[0], -1, 100000, -1, "equipped armor index", repairs);
+        shieldIdx = repairRange(f[1], -1, 100000, -1, "equipped shield index", repairs);
+        at++;
+    }
+    if (at < lines.size() && parseWholeInt(lines[at], insp)) at++;
+    if (at < lines.size() && parseWholeInt(lines[at], spd)) at++;
+    spd = repairRange(spd, 0, 1000, 30, "speed", repairs);
+
+    std::vector<std::string> loadedConditions;
+    int conditionCount = 0;
+    if (at < lines.size() && parseWholeInt(lines[at], conditionCount))
+    {
+        at++;
+        for (int i = 0; i < conditionCount && at < lines.size(); i++)
+        {
+            const std::string condition = lines[at++];
+            if (!condition.empty()) loadedConditions.push_back(condition);
         }
     }
 
@@ -149,21 +289,27 @@ Character Character::loadFromDirectory(const std::string& dir) {
     }
 
     {
-        std::ifstream f((fs::path(dir) / "inventory.txt").string());
-        if (f) c.getInventory().load(f);
+        std::ifstream f2((fs::path(dir) / "inventory.txt").string());
+        if (f2) c.getInventory().load(f2);
     }
     {
-        std::ifstream f((fs::path(dir) / "wallet.txt").string());
-        if (f) c.getWallet().load(f);
+        std::ifstream f2((fs::path(dir) / "wallet.txt").string());
+        if (f2) c.getWallet().load(f2);
     }
-    c.getSpellbook().loadSpellbook((fs::path(dir) / "spells.txt").string());
+    // Guarded like the other sub-files: loadSpellbook throws if the file is
+    // absent, which would otherwise make a missing spells.txt fail the whole
+    // character load while a missing inventory.txt is tolerated.
+    if (fs::exists(fs::path(dir) / "spells.txt"))
     {
-        std::ifstream f((fs::path(dir) / "spellslots.txt").string());
-        if (f) c.getSpellSlots().load(f);
+        c.getSpellbook().loadSpellbook((fs::path(dir) / "spells.txt").string());
     }
     {
-        std::ifstream f((fs::path(dir) / "features.txt").string());
-        if (f) c.getFeatures().load(f);
+        std::ifstream f2((fs::path(dir) / "spellslots.txt").string());
+        if (f2) c.getSpellSlots().load(f2);
+    }
+    {
+        std::ifstream f2((fs::path(dir) / "features.txt").string());
+        if (f2) c.getFeatures().load(f2);
     }
 
     return c;

@@ -188,8 +188,22 @@ public:
     void showFeatures() const;
 
     // File functions
+    //
+    // character.txt carries a version header ("#DNDCHAR <n>") as its first
+    // line. Files written before versioning existed have no header and are
+    // read as version 0.
+    static constexpr int kSaveFormatVersion = 1;
+
     void saveToDirectory(const std::string& dirPath) const;
-    static Character loadFromDirectory(const std::string& dirPath);
+
+    // Loads a character, validating every field rather than trusting the file.
+    // Values outside their legal range are repaired to a safe default and a
+    // human-readable note is appended to `repairs` (when non-null) rather than
+    // being silently accepted -- this is what let a hit_dice of "0" and a
+    // proficiency of -1 sit unnoticed in saved characters.
+    // Throws LoadError if the file is missing or too malformed to interpret.
+    static Character loadFromDirectory(const std::string& dirPath,
+                                       std::vector<std::string>* repairs = nullptr);
 };
 
 #endif

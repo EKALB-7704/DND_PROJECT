@@ -1,4 +1,5 @@
 #include "H_ConsoleIO.h"
+#include "H_Validate.h"
 
 #include <algorithm>
 #include <cctype>
@@ -6,21 +7,11 @@
 
 namespace {
 
-// Trims leading/trailing whitespace. Menu entries routinely arrive as " 3 "
-// once the caller stops relying on operator>> to skip whitespace for them.
-std::string trim(const std::string& s)
-{
-    const auto first = s.find_first_not_of(" \t\r\n\f\v");
-    if (first == std::string::npos) return "";
-    const auto last = s.find_last_not_of(" \t\r\n\f\v");
-    return s.substr(first, last - first + 1);
-}
-
 // Parses a complete integer, rejecting trailing junk ("12abc") that
 // operator>> would have silently accepted as 12.
 bool parseInt(const std::string& text, int& out)
 {
-    const std::string t = trim(text);
+    const std::string t = Validate::trim(text);
     if (t.empty()) return false;
 
     try
@@ -38,7 +29,7 @@ bool parseInt(const std::string& text, int& out)
 // Same idea as parseInt, for decimal fields.
 bool parseFloat(const std::string& text, float& out)
 {
-    const std::string t = trim(text);
+    const std::string t = Validate::trim(text);
     if (t.empty()) return false;
 
     try
@@ -54,43 +45,6 @@ bool parseFloat(const std::string& text, float& out)
 }
 
 } // namespace
-
-namespace Validate {
-
-bool isText(const std::string& input)
-{
-    if (input.empty()) return false;
-    bool hasLetter = false;
-    for (unsigned char c : input)
-    {
-        if (!std::isprint(c)) return false;
-        if (std::isalpha(c)) hasLetter = true;
-    }
-    return hasLetter;
-}
-
-bool isName(const std::string& input)
-{
-    if (input.empty()) return false;
-    for (unsigned char c : input)
-    {
-        if (!std::isprint(c)) return false;
-    }
-    // Reject entries that are only whitespace.
-    return !trim(input).empty();
-}
-
-bool isHitDice(const std::string& input)
-{
-    if (input.size() < 2 || input[0] != 'd') return false;
-    for (size_t i = 1; i < input.size(); i++)
-    {
-        if (!std::isdigit(static_cast<unsigned char>(input[i]))) return false;
-    }
-    return true;
-}
-
-} // namespace Validate
 
 ConsoleIO::ConsoleIO(std::istream& input, std::ostream& output)
     : in(input), out(output) {}
@@ -194,7 +148,7 @@ std::string ConsoleIO::readMatching(const std::string& prompt,
             throw EndOfInput("input closed while reading: " + prompt);
         }
 
-        const std::string value = trim(line);
+        const std::string value = Validate::trim(line);
         if (valid(value)) return value;
 
         out << errorHint << "\n";
@@ -230,7 +184,7 @@ bool ConsoleIO::readYesNo(const std::string& prompt)
             throw EndOfInput("input closed while reading: " + prompt);
         }
 
-        std::string value = trim(line);
+        std::string value = Validate::trim(line);
         std::transform(value.begin(), value.end(), value.begin(),
                        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
