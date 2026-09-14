@@ -17,10 +17,8 @@ int spellChoice;
         io.os() << "3. View Character SpellBook\n";
         io.os() << "4. Cast Spell\n";
         io.os() << "5. Edit Spell Slots\n";
-        io.os() << "6. Long Rest\n";
-        io.os() << "7. Short Rest\n";
         io.os() << "0. Back\n";
-        spellChoice = io.readMenuChoice("Choice: ", 7);
+        spellChoice = io.readMenuChoice("Choice: ", 5);
 
         if (spellChoice == 1)
         {
@@ -168,52 +166,6 @@ int spellChoice;
                     }
                 }
             } while (slotEditChoice != 0);
-        }
-        else if (spellChoice == 6)
-        {
-            c.getSpellSlots().resetSlots();
-            c.setCurrentHP(c.getMaxHP());
-            c.recoverHitDice();
-            io.os() << "Long rest complete. HP, spell slots, and hit dice restored.\n";
-            io.os() << "Hit dice: " << c.getHitDiceNum() << "/" << c.getLevel() << c.getHitDice() << "\n";
-        }
-        else if (spellChoice == 7)
-        {
-            if (ManagerHelpers::isWarlockClass(c))
-            {
-                c.getSpellSlots().resetSlots();
-                io.os() << "Short rest complete. Warlock spell slots restored to full.\n";
-            }
-            else
-            {
-                io.os() << "Short rest complete. Spell slots unchanged for "
-                          << c.getClass() << ".\n";
-            }
-
-            // All classes can spend hit dice during a short rest.
-            io.os() << "Hit dice available: " << c.getHitDiceNum()
-                      << "/" << c.getLevel() << c.getHitDice() << "\n";
-            if (c.getHitDiceNum() > 0 && c.getCurrentHP() < c.getMaxHP())
-            {
-                const int toSpend = io.readInt(
-                    "Spend how many hit dice to recover HP? (0 = No): ",
-                    0, c.getHitDiceNum());
-
-                if (toSpend > 0)
-                {
-                    const int hpGained = io.readInt(
-                        "Enter total HP recovered (roll " + std::to_string(toSpend) +
-                        c.getHitDice() + " + CON modifier per die): ", 0, 100000);
-                    if (hpGained > 0)
-                    {
-                        int newHp = c.getCurrentHP() + hpGained;
-                        c.setCurrentHP(newHp > c.getMaxHP() ? c.getMaxHP() : newHp);
-                    }
-                    c.spendHitDice(toSpend);
-                    io.os() << "HP: " << c.getCurrentHP() << "/" << c.getMaxHP()
-                              << "  Hit dice remaining: " << c.getHitDiceNum() << "\n";
-                }
-            }
         }
     } while (spellChoice != 0);
 }

@@ -109,8 +109,8 @@ void CharacterManager::editCharacter() {
     // Display edit menu
     do {
         io.os() << "\n=== " << c.getName() << " Editor ===\n";
-        io.os() << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n0. Back \n";
-        choice = io.readMenuChoice("Choice: ", 6);
+        io.os() << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n7. Rest (short / long) \n0. Back \n";
+        choice = io.readMenuChoice("Choice: ", 7);
 
         if (choice == 1) // Character details
         {
@@ -135,6 +135,10 @@ void CharacterManager::editCharacter() {
         else if (choice == 6) // Feats and abilites
         {
             manageFeatures(c);
+        }
+        else if (choice == 7) // Short / long rest
+        {
+            restCharacter(c);
         }
         else if (choice == 0)
         {

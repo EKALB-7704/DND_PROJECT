@@ -24,6 +24,7 @@ set(LIB_SOURCES
     src/P_EditDetails.cpp
     src/P_EditHealth.cpp
     src/P_EditSpells.cpp
+    src/P_Rest.cpp
     src/P_ManageInventory.cpp
     src/P_ManageFeatures.cpp
     src/P_GlobalSpells.cpp

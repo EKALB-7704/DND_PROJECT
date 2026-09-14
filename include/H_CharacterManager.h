@@ -21,6 +21,7 @@ private:
     void editHealth(Character& c);
     void editAbilityScores(Character& c);
     void editSpells(Character& c);
+    void restCharacter(Character& c);
     void manageInventory(Character& c);
     void manageFeatures(Character& c);
 

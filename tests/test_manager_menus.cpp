@@ -121,15 +121,17 @@ TEST(ManagerMenuTest, CreateCharacterThrowsIfInputEndsEarly) {
 // ---------------------------------------------------------------------------
 
 TEST(ManagerMenuTest, EditDetailsChangesName) {
-    ManagerHarness h(editOnly("1\n1\nGloin\n0\n"));
+    ManagerHarness h(editOnly("1\n1\nGloin\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
     EXPECT_EQ(h.only().getName(), "Gloin");
 }
 
+// Three edits in a single visit to the submenu -- only possible now that it
+// loops instead of returning to the editor after each change.
 TEST(ManagerMenuTest, EditDetailsChangesRaceClassAndAlignment) {
-    ManagerHarness h(editOnly("1\n2\nHuman\n1\n3\nWizard\n1\n5\nChaotic Good\n0\n"));
+    ManagerHarness h(editOnly("1\n2\nHuman\n3\nWizard\n5\nChaotic Good\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -139,7 +141,7 @@ TEST(ManagerMenuTest, EditDetailsChangesRaceClassAndAlignment) {
 }
 
 TEST(ManagerMenuTest, EditDetailsLevelIsClampedToTwenty) {
-    ManagerHarness h(editOnly("1\n8\n25\n12\n0\n"));
+    ManagerHarness h(editOnly("1\n8\n25\n12\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -147,7 +149,7 @@ TEST(ManagerMenuTest, EditDetailsLevelIsClampedToTwenty) {
 }
 
 TEST(ManagerMenuTest, EditDetailsChangesSpeed) {
-    ManagerHarness h(editOnly("1\n9\n25\n0\n"));
+    ManagerHarness h(editOnly("1\n9\n25\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -159,7 +161,7 @@ TEST(ManagerMenuTest, EditDetailsChangesSpeed) {
 // ---------------------------------------------------------------------------
 
 TEST(ManagerMenuTest, EditHealthSetsMaxHp) {
-    ManagerHarness h(editOnly("2\n1\n60\n0\n"));
+    ManagerHarness h(editOnly("2\n1\n60\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -168,7 +170,7 @@ TEST(ManagerMenuTest, EditHealthSetsMaxHp) {
 
 TEST(ManagerMenuTest, EditHealthAllowsZeroCurrentHp) {
     // 0 HP is unconscious and must be accepted; the old helper rejected it.
-    ManagerHarness h(editOnly("2\n2\n0\n0\n"));
+    ManagerHarness h(editOnly("2\n2\n0\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -177,7 +179,7 @@ TEST(ManagerMenuTest, EditHealthAllowsZeroCurrentHp) {
 
 TEST(ManagerMenuTest, EditHealthCurrentHpCannotExceedMax) {
     // 999 is above max (44), so it is refused and re-prompted.
-    ManagerHarness h(editOnly("2\n2\n999\n40\n0\n"));
+    ManagerHarness h(editOnly("2\n2\n999\n40\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -185,7 +187,7 @@ TEST(ManagerMenuTest, EditHealthCurrentHpCannotExceedMax) {
 }
 
 TEST(ManagerMenuTest, EditHealthSetsTempHp) {
-    ManagerHarness h(editOnly("2\n3\n7\n0\n"));
+    ManagerHarness h(editOnly("2\n3\n7\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -193,7 +195,7 @@ TEST(ManagerMenuTest, EditHealthSetsTempHp) {
 }
 
 TEST(ManagerMenuTest, EditHealthSetsHitDice) {
-    ManagerHarness h(editOnly("2\n4\nd12\n0\n"));
+    ManagerHarness h(editOnly("2\n4\nd12\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -201,7 +203,7 @@ TEST(ManagerMenuTest, EditHealthSetsHitDice) {
 }
 
 TEST(ManagerMenuTest, EditHealthAddsAndClearsConditions) {
-    ManagerHarness h(editOnly("2\n7\n1\nPoisoned\n1\nProne\n0\n0\n"));
+    ManagerHarness h(editOnly("2\n7\n1\nPoisoned\n1\nProne\n0\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -211,7 +213,7 @@ TEST(ManagerMenuTest, EditHealthAddsAndClearsConditions) {
 }
 
 TEST(ManagerMenuTest, EditHealthRemovesACondition) {
-    ManagerHarness h(editOnly("2\n7\n1\nPoisoned\n1\nProne\n2\n1\n0\n0\n"));
+    ManagerHarness h(editOnly("2\n7\n1\nPoisoned\n1\nProne\n2\n1\n0\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -220,7 +222,7 @@ TEST(ManagerMenuTest, EditHealthRemovesACondition) {
 }
 
 TEST(ManagerMenuTest, EditHealthClearsAllConditions) {
-    ManagerHarness h(editOnly("2\n7\n1\nPoisoned\n3\n0\n0\n"));
+    ManagerHarness h(editOnly("2\n7\n1\nPoisoned\n3\n0\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -228,7 +230,7 @@ TEST(ManagerMenuTest, EditHealthClearsAllConditions) {
 }
 
 TEST(ManagerMenuTest, EditHealthResetsDeathSaves) {
-    ManagerHarness h(editOnly("2\n6\n0\n"));
+    ManagerHarness h(editOnly("2\n6\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -239,7 +241,7 @@ TEST(ManagerMenuTest, EditHealthResetsDeathSaves) {
 // A death save roll is random, but it must always move the tally by at least
 // one mark and leave both counters within the legal 0-3 range.
 TEST(ManagerMenuTest, EditHealthDeathSaveRecordsAResult) {
-    ManagerHarness h(editOnly("2\n5\n1\n0\n"));
+    ManagerHarness h(editOnly("2\n5\n1\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -286,7 +288,7 @@ TEST(ManagerMenuTest, EditAbilityScoreRejectsIndexOutsideOneToSix) {
 
 TEST(ManagerMenuTest, LongRestRestoresHpSlotsAndHitDice) {
     // Drop to 10 HP and spend hit dice, then take a long rest.
-    ManagerHarness h(editOnly("2\n2\n10\n5\n6\n0\n0\n"));
+    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n1\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -402,4 +404,92 @@ TEST(ManagerMenuTest, ViewCharactersOnEmptyRosterDoesNothing) {
     h.mgr.viewCharacters();
 
     EXPECT_NE(h.written().find("No characters"), std::string::npos);
+}
+
+// ---------------------------------------------------------------------------
+// Submenu looping (all editor sections now behave the same way)
+// ---------------------------------------------------------------------------
+
+// Every submenu returns to itself after an action and leaves only on 0. These
+// scripts each perform two edits in one visit, which the single-shot details
+// and health menus could not do.
+TEST(ManagerMenuTest, DetailsSubmenuLoopsUntilZero) {
+    ManagerHarness h(editOnly("1\n6\n40\n7\n210\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getAge(), 40);
+    EXPECT_EQ(h.only().getWeight(), 210);
+}
+
+TEST(ManagerMenuTest, HealthSubmenuLoopsUntilZero) {
+    ManagerHarness h(editOnly("2\n1\n60\n3\n5\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getMaxHP(), 60);
+    EXPECT_EQ(h.only().getTempHP(), 5);
+}
+
+// Leaving a submenu with 0 returns to the editor, not out of it, so a second
+// section can be entered in the same editing session.
+TEST(ManagerMenuTest, LeavingASubmenuReturnsToTheEditor) {
+    ManagerHarness h(editOnly("1\n1\nGloin\n0\n2\n3\n9\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getName(), "Gloin");
+    EXPECT_EQ(h.only().getTempHP(), 9);
+}
+
+// ---------------------------------------------------------------------------
+// Rest as a top-level editor section (menu 7)
+// ---------------------------------------------------------------------------
+
+TEST(ManagerMenuTest, RestMenuLongRestRestoresEverything) {
+    // Spend HP and a slot, then long rest from the new top-level entry.
+    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n1\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getCurrentHP(), h.only().getMaxHP());
+    EXPECT_EQ(h.only().getHitDiceNum(), h.only().getLevel());
+}
+
+TEST(ManagerMenuTest, RestMenuShortRestSpendsHitDiceForHp) {
+    // Drop to 10 HP, short rest, spend 2 hit dice, report 12 HP recovered.
+    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n2\n2\n12\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getCurrentHP(), 22);
+    EXPECT_EQ(h.only().getHitDiceNum(), h.only().getLevel() - 2);
+}
+
+TEST(ManagerMenuTest, RestMenuShortRestCannotSpendMoreDiceThanAvailable) {
+    // Only 5 hit dice exist at level 5, so 99 is refused and re-prompted.
+    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n2\n99\n1\n6\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getHitDiceNum(), h.only().getLevel() - 1);
+}
+
+TEST(ManagerMenuTest, RestMenuLoopsUntilZero) {
+    // Two long rests in one visit, then back.
+    ManagerHarness h(editOnly("7\n1\n1\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getCurrentHP(), h.only().getMaxHP());
+}
+
+// The Spells submenu no longer offers the rests; its highest option is 5.
+TEST(ManagerMenuTest, SpellsSubmenuNoLongerOffersRests) {
+    ManagerHarness h(editOnly("5\n6\n5\n0\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    // 6 is rejected as out of range rather than performing a long rest.
+    EXPECT_NE(h.written().find("Invalid entry"), std::string::npos);
 }
