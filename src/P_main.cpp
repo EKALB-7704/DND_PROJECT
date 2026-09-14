@@ -1,15 +1,17 @@
-
 #include <iostream>
-#include <fstream>
-#include <limits>
 #include "H_CharacterManager.h"
 #include "H_CharacterFeatures.h"
+#include "H_ConsoleIO.h"
 #include "H_DiceRoller.h"
 #include "H_SpellBook.h"
 #include "H_Colours.h"
 #include "H_DndExceptions.h"
 
 int main() {
+  // Single console I/O layer, shared by every menu. Reads are validated and
+  // re-prompted here rather than at each `std::cin >>` site.
+  ConsoleIO io;
+
   try {
 
     // Initialize character and colour manager objects
@@ -30,10 +32,8 @@ int main() {
         std::cout << "4. Change Text Colour\n";
         std::cout << "5. Roll Dice\n";
         std::cout << "0. Exit\n";
-        std::cout << "Choice: ";
-        
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        choice = io.readMenuChoice("Choice: ", 5);
 
         switch (choice) {
             case 1: manager.createCharacter(); break;
@@ -48,10 +48,8 @@ int main() {
                     std::cout << "3. Edit Character\n";
                     std::cout << "4. Save Characters\n";
                     std::cout << "0. Back\n";
-                    std::cout << "Choice: ";
 
-                    std::cin >> characterMenuChoice;
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    characterMenuChoice = io.readMenuChoice("Choice: ", 4);
 
                     switch (characterMenuChoice)
                     {
@@ -69,28 +67,32 @@ int main() {
                             break;
                         case 0:
                             break;
-                        default:
-                            std::cout << "Invalid choice.\n";
-                            break;
                     }
                 } while (characterMenuChoice != 0);
                 break;
             }
             case 3: manager.manageGlobalSpells(); break;
-            case 4: col_manager.ChangeColour(); break;
-            case 5: diceRoller.promptAndRoll(); break;
+            case 4: col_manager.ChangeColour(io); break;
+            case 5: diceRoller.promptAndRoll(io); break;
             case 0: break;
-            default: std::cout << "Invalid choice.\n"; break;
         }
 
     } while (choice != 0);
     col_manager.setColour(WHITE); // Set terminal colour back to white before closing program
     return 0;
 
+  } catch (const EndOfInput&) {
+    // stdin closed (Ctrl-D, or a piped script running out). Not an error:
+    // restore the terminal colour and leave quietly.
+    Colour_manager().setColour(WHITE);
+    std::cout << "\nInput closed. Exiting.\n";
+    return 0;
   } catch (const std::exception& e) {
+    Colour_manager().setColour(WHITE);
     std::cerr << "\nFatal error: " << e.what() << "\n";
     return 1;
   } catch (...) {
+    Colour_manager().setColour(WHITE);
     std::cerr << "\nUnknown fatal error.\n";
     return 1;
   }

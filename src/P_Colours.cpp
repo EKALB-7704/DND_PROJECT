@@ -77,22 +77,11 @@ void Colour_manager::DisplayColourcodes()
     std::cout << ansiCode(BRIGHT_WHITE) << "15: Bright White" << ansiCode(WHITE) << std::endl;
 }
 
-void Colour_manager::ChangeColour()
+void Colour_manager::ChangeColour(ConsoleIO& io)
 {
     DisplayColourcodes();
-    std::cout << "What Colour would you like?: " << std::endl;
-    int choice;
-    if (!(std::cin >> choice))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Invalid input. Colour unchanged." << std::endl;
-        return;
-    }
-    if (choice < 0 || choice > 15)
-    {
-        std::cout << "Invalid colour code. Please enter a value between 0 and 15." << std::endl;
-        return;
-    }
+    // Previously a bad entry printed "Colour unchanged" and bailed; readInt
+    // re-prompts until the value is in range.
+    const int choice = io.readInt("What Colour would you like?: ", 0, 15);
     setColour(choice);
 }

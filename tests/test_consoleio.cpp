@@ -227,3 +227,28 @@ TEST(ConsoleIOTest, PromptIsWrittenToInjectedStream) {
     h.io.readInt("Level: ", 1, 20);
     EXPECT_NE(h.written().find("Level: "), std::string::npos);
 }
+
+// ---------------------------------------------------------------------------
+// readIntFrom — non-contiguous choice sets
+// ---------------------------------------------------------------------------
+
+TEST(ConsoleIOTest, ReadIntFromAcceptsAllowedValue) {
+    Harness h("20\n");
+    EXPECT_EQ(h.io.readIntFrom("Die: ", {4, 6, 8, 10, 12, 20, 100}), 20);
+}
+
+TEST(ConsoleIOTest, ReadIntFromRejectsValueOutsideSet) {
+    Harness h("7\n12\n");
+    EXPECT_EQ(h.io.readIntFrom("Die: ", {4, 6, 8, 10, 12, 20, 100}), 12);
+    EXPECT_NE(h.written().find("Choose one of"), std::string::npos);
+}
+
+TEST(ConsoleIOTest, ReadIntFromRejectsNonNumeric) {
+    Harness h("d20\n20\n");
+    EXPECT_EQ(h.io.readIntFrom("Die: ", {4, 20}), 20);
+}
+
+TEST(ConsoleIOTest, ReadIntFromThrowsAtEndOfInput) {
+    Harness h("");
+    EXPECT_THROW(h.io.readIntFrom("Die: ", {4, 6}), EndOfInput);
+}

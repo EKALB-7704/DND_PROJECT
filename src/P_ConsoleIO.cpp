@@ -110,6 +110,33 @@ int ConsoleIO::readInt(const std::string& prompt, int min, int max)
     }
 }
 
+int ConsoleIO::readIntFrom(const std::string& prompt, const std::vector<int>& allowed)
+{
+    std::string line;
+    while (true)
+    {
+        out << prompt;
+        if (!readRawLine(line))
+        {
+            throw EndOfInput("input closed while reading: " + prompt);
+        }
+
+        int value = 0;
+        if (parseInt(line, value) &&
+            std::find(allowed.begin(), allowed.end(), value) != allowed.end())
+        {
+            return value;
+        }
+
+        out << "Invalid entry. Choose one of:";
+        for (size_t i = 0; i < allowed.size(); i++)
+        {
+            out << (i == 0 ? " " : ", ") << allowed[i];
+        }
+        out << "\n";
+    }
+}
+
 int ConsoleIO::readMenuChoice(const std::string& prompt, int maxOption)
 {
     return readInt(prompt, 0, maxOption);

@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "H_DndExceptions.h" // EndOfInput
 
@@ -45,6 +46,10 @@ public:
 
     // Integer in [min, max] inclusive. Re-prompts until valid.
     int readInt(const std::string& prompt, int min, int max);
+
+    // Integer restricted to an explicit set, for choices that are not a
+    // contiguous range (e.g. die sides: 4, 6, 8, 10, 12, 20, 100).
+    int readIntFrom(const std::string& prompt, const std::vector<int>& allowed);
 
     // Menu selection in [0, maxOption]. 0 is conventionally Back/Exit.
     // Replaces the bare `std::cin >> choice` in every menu loop, where a

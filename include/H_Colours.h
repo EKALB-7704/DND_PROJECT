@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 
+#include "H_ConsoleIO.h"
+
 #define  BLACK                  0
 #define  BLUE                   1
 #define  GREEN                  2
@@ -33,5 +35,6 @@ public:
     void DisplayColourcodes();
 
     // Utilities
-    void ChangeColour();
+    // Reads the colour choice through io so the prompt is validated and testable.
+    void ChangeColour(ConsoleIO& io);
 };

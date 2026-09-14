@@ -24,11 +24,8 @@
 
 namespace {
 // Restrict the interactive roller to the standard dice used in this project.
-bool isSupportedDie(int sides)
-{
-    return sides == 4 || sides == 6 || sides == 8 || sides == 10 ||
-           sides == 12 || sides == 20 || sides == 100;
-}
+// Single source of truth: the prompt validates against this same list.
+const std::vector<int> kSupportedDice = {4, 6, 8, 10, 12, 20, 100};
 
 // Small timed animation used only by the interactive menu flow.
 void showRollAnimation()
@@ -103,38 +100,23 @@ D20RollResult DiceRoller::rollD20(D20Mode mode)
 }
 
 // Main interactive menu flow for the standalone dice roller.
-void DiceRoller::promptAndRoll()
+void DiceRoller::promptAndRoll(ConsoleIO& io)
 {
-    int sides = 0;
-    std::cout << "\n=== Dice Roller ===\n";
-    std::cout << "Choose a die (4, 6, 8, 10, 12, 20, 100): ";
-    std::cin >> sides;
+    std::ostream& out = io.os();
 
-    if (std::cin.fail() || !isSupportedDie(sides))
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Invalid die choice.\n";
-        return;
-    }
+    out << "\n=== Dice Roller ===\n";
+    // Each of these prompts used to abort the whole roll on a bad entry;
+    // they now re-prompt until the value is usable.
+    const int sides = io.readIntFrom("Choose a die (4, 6, 8, 10, 12, 20, 100): ",
+                                     kSupportedDice);
 
     if (sides == 20)
     {
         // d20 rolls get a separate prompt for advantage/disadvantage handling.
-        int modeChoice = 0;
-        std::cout << "1. Normal\n";
-        std::cout << "2. Advantage\n";
-        std::cout << "3. Disadvantage\n";
-        std::cout << "Choice: ";
-        std::cin >> modeChoice;
-
-        if (std::cin.fail() || modeChoice < 1 || modeChoice > 3)
-        {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Invalid roll mode.\n";
-            return;
-        }
+        out << "1. Normal\n";
+        out << "2. Advantage\n";
+        out << "3. Disadvantage\n";
+        const int modeChoice = io.readInt("Choice: ", 1, 3);
 
         D20Mode mode = D20Mode::Normal;
         if (modeChoice == 2)
@@ -151,13 +133,13 @@ void DiceRoller::promptAndRoll()
 
         if (mode == D20Mode::Normal)
         {
-            std::cout << "Result: " << result.chosenRoll << "\n";
+            out << "Result: " << result.chosenRoll << "\n";
         }
         else
         {
             // Show both d20 rolls so the player can see what advantage/disadvantage did.
-            std::cout << "Rolls: " << result.firstRoll << ", " << result.secondRoll << "\n";
-            std::cout << "Chosen result: " << result.chosenRoll << "\n";
+            out << "Rolls: " << result.firstRoll << ", " << result.secondRoll << "\n";
+            out << "Chosen result: " << result.chosenRoll << "\n";
         }
         return;
     }
@@ -166,33 +148,24 @@ void DiceRoller::promptAndRoll()
     {
         // d100 is always rolled once, so no quantity prompt is needed.
         showRollAnimation();
-        std::cout << "Result: " << rollDie(100) << "\n";
+        out << "Result: " << rollDie(100) << "\n";
         return;
     }
 
     // All other supported dice ask how many copies of that die to roll.
-    int count = 0;
-    std::cout << "How many d" << sides << " would you like to roll? ";
-    std::cin >> count;
-
-    if (std::cin.fail() || count < 1)
-    {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        std::cout << "Invalid number of dice.\n";
-        return;
-    }
+    const int count = io.readInt(
+        "How many d" + std::to_string(sides) + " would you like to roll? ", 1, 100);
 
     showRollAnimation();
     std::vector<int> rolls = rollDice(count, sides);
-    std::cout << "Rolls: ";
+    out << "Rolls: ";
     for (size_t i = 0; i < rolls.size(); i++)
     {
-        std::cout << rolls[i];
+        out << rolls[i];
         if (i + 1 < rolls.size())
         {
-            std::cout << ", ";
+            out << ", ";
         }
     }
-    std::cout << "\nTotal: " << totalRoll(rolls) << "\n";
+    out << "\nTotal: " << totalRoll(rolls) << "\n";
 }

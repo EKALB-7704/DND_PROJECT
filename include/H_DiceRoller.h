@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "H_ConsoleIO.h"
+
 enum class D20Mode {
     Normal = 0,
     Advantage = 1,
@@ -33,7 +35,7 @@ public:
     D20RollResult rollD20(D20Mode mode);
 
     // Handles user prompts for choosing the die type and displaying results.
-    void promptAndRoll();
+    void promptAndRoll(ConsoleIO& io);
 };
 
 #endif
