@@ -90,6 +90,12 @@ Characters are saved under `data/characters/<name>/` with one file per subsystem
 | `spellslots.txt` | Spell slot availability per level |
 | `wallet.txt` | Currency denominations |
 
+`data/characters/` is intentionally **not** tracked in git — it is runtime state
+written by the app, so committing it made every play session show up as a working
+tree change. Your characters live on disk and persist normally; they just don't
+travel with a clone. `data/SpellBook.txt` (the global spell registry) *is* tracked,
+and is loaded by relative path, so run the program from the repository root.
+
 ## Tests
 
 Ten test suites cover the full system:
@@ -107,9 +113,22 @@ Ten test suites cover the full system:
 
 ## Future Plans
 
+Current focus is a codebase cleanup pass before any new features:
+
+1. Repo hygiene — untrack build artifacts and runtime save data
+2. Consolidate console input behind one validated I/O layer
+3. Split `CharacterManager` (currently ~1600 lines) into per-section menu units
+4. Add a version header to the character save format, with validation on load
+
+Planned features, once the above lands:
+
 - Dungeon Master mode: manage both player characters and NPCs within a campaign
-- Expanded UI rework (active branch: `UI-REWORK`)
-- Continued cross-platform polish (active branch: `Linux-Windows_cross_compatibility`)
+- Wire the dice roller into skill checks, saving throws, attacks, and initiative
+- XP tracking and level-up (proficiency bonus is derivable from level)
+- Character deletion
+
+The `UI-REWORK`, `Save-system-overhaul`, and `Linux-Windows_cross_compatibility`
+branches have all been merged into `main`.
 
 
 
