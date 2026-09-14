@@ -85,18 +85,22 @@ Characters are saved under `data/characters/<name>/` with one file per subsystem
 
 | File | Contents |
 |------|----------|
-| `character.txt` | Version header, then core attributes (name, race, class, ability scores, HP, etc.) |
+| `character.txt` | Core attributes (name, race, class, ability scores, HP, etc.) |
 | `features.txt` | Feats, racial traits, languages, skills, saving throws |
 | `inventory.txt` | Items with type tags for polymorphic reconstruction |
 | `spells.txt` | Known spells |
 | `spellslots.txt` | Spell slot availability per level |
 | `wallet.txt` | Currency denominations |
 
-`character.txt` starts with a version line, `#DNDCHAR 1`. Files saved before
+Every save file starts with a version line — `#DNDCHAR 1`, `#DNDFEATS 1`,
+`#DNDINV 1`, `#DNDWALLET 1`, `#DNDSLOTS 1`, `#DNDSPELLS 1`. Files saved before
 versioning have no header, are read as version 0, and are rewritten with one
-the next time the character is saved. Fields are validated on load: values
-outside their legal range are repaired to a safe default and reported, and a
-malformed file is refused rather than partially read.
+the next time the character is saved, so older saves keep working.
+
+Fields are validated on load rather than trusted: values outside their legal
+range are repaired to a safe default and reported, record counts are bounded
+and must parse completely, and a malformed or truncated file is refused rather
+than partially read. The shared machinery lives in `H_SaveFormat.h`.
 
 `data/characters/` is intentionally **not** tracked in git — it is runtime state
 written by the app, so committing it made every play session show up as a working
@@ -120,7 +124,7 @@ Thirteen test suites cover the full system:
 - `test_colours` — terminal color functionality
 - `test_consoleio` — input parsing, range/format validation, and EOF handling
 - `test_manager_menus` — menu flows driven end to end from a scripted stream
-- `test_save_format` — save versioning, legacy reads, field repair, malformed files
+- `test_save_format` — save versioning across all six files, legacy reads, field repair, malformed files
 
 ## Future Plans
 
