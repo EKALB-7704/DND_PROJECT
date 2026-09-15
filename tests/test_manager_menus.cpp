@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <cstdio>
+#include <limits>
 #include <sstream>
 #include <string>
 
@@ -492,4 +494,100 @@ TEST(ManagerMenuTest, SpellsSubmenuNoLongerOffersRests) {
 
     // 6 is rejected as out of range rather than performing a long rest.
     EXPECT_NE(h.written().find("Invalid entry"), std::string::npos);
+}
+
+// ---------------------------------------------------------------------------
+// Roll checks and saves (menu 8)
+// ---------------------------------------------------------------------------
+//
+// The d20 is random, so these read the printed roll and total back and check
+// that total == chosen roll + the expected modifier. Gimli's sheet:
+// STR 16 (+3), DEX 12 (+1), CON 15 (+2), initiative +1, proficiency +3.
+
+namespace {
+
+// The integer printed after the last occurrence of `key`, or INT_MIN if absent.
+int valueAfter(const std::string& text, const std::string& key) {
+    const auto pos = text.rfind(key);
+    if (pos == std::string::npos) return std::numeric_limits<int>::min();
+    return std::stoi(text.substr(pos + key.size()));
+}
+
+// Asserts the last check printed was a legal d20 plus `modifier`.
+void expectCheckTotal(const std::string& text, int modifier) {
+    const bool hasChosen = text.rfind("Chosen roll: ") != std::string::npos;
+    const int roll = valueAfter(text, hasChosen ? "Chosen roll: " : "Roll: ");
+    ASSERT_GE(roll, 1);
+    ASSERT_LE(roll, 20);
+    EXPECT_EQ(valueAfter(text, "Total: "), roll + modifier);
+}
+
+size_t countOf(const std::string& text, const std::string& needle) {
+    size_t n = 0;
+    for (auto pos = text.find(needle); pos != std::string::npos;
+         pos = text.find(needle, pos + needle.size()))
+        ++n;
+    return n;
+}
+
+} // namespace
+
+TEST(ManagerMenuTest, RollChecksSkillCheckUsesSkillProficiency) {
+    // Make Stealth (skill 17, DEX) proficient, then roll it: +1 DEX +3 prof.
+    ManagerHarness h(editOnly("6\n7\n17\n1\n0\n8\n1\n17\n1\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_NE(h.written().find("Stealth check (+4)"), std::string::npos);
+    expectCheckTotal(h.written(), 4);
+}
+
+TEST(ManagerMenuTest, RollChecksSavingThrowUsesSaveProficiency) {
+    // Toggle CON save proficiency, then roll it: +2 CON +3 prof.
+    ManagerHarness h(editOnly("6\n8\nCON\n0\n8\n2\n3\n1\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_NE(h.written().find("Constitution saving throw (+5)"), std::string::npos);
+    expectCheckTotal(h.written(), 5);
+}
+
+TEST(ManagerMenuTest, RollChecksAbilityCheckUsesModifierOnly) {
+    ManagerHarness h(editOnly("8\n3\n1\n1\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_NE(h.written().find("Strength check (+3)"), std::string::npos);
+    expectCheckTotal(h.written(), 3);
+}
+
+TEST(ManagerMenuTest, RollChecksInitiativeWithAdvantageKeepsHigherRoll) {
+    ManagerHarness h(editOnly("8\n4\n2\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    const std::string out = h.written();
+    const auto rolls = out.rfind("Rolls: ");
+    ASSERT_NE(rolls, std::string::npos);
+    int first = 0, second = 0;
+    ASSERT_EQ(std::sscanf(out.c_str() + rolls, "Rolls: %d, %d", &first, &second), 2);
+    EXPECT_EQ(valueAfter(out, "Chosen roll: "), std::max(first, second));
+    expectCheckTotal(out, 1);
+}
+
+TEST(ManagerMenuTest, RollChecksLoopsUntilZero) {
+    // Two initiative rolls in one visit, then back.
+    ManagerHarness h(editOnly("8\n4\n1\n4\n1\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(countOf(h.written(), "Total: "), 2u);
+}
+
+TEST(ManagerMenuTest, RollChecksCancellingSkillSelectionRollsNothing) {
+    ManagerHarness h(editOnly("8\n1\n0\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.written().find("Total: "), std::string::npos);
 }

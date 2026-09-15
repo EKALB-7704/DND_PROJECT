@@ -496,10 +496,23 @@ int Character::getSpeed() const { return speed; }
 void Character::setSpeed(int spd) { if (spd > 0) speed = spd; }
 int Character::getPassivePerception() const
 {
-    return 10 + features.getSkillModifier("Perception",
-                                          strength, dexterity, constitution,
-                                          intelligence, wisdom, charisma,
-                                          proficiency);
+    return 10 + getSkillModifier("Perception");
+}
+
+int Character::getSkillModifier(const std::string& skillName) const
+{
+    return features.getSkillModifier(skillName,
+                                     strength, dexterity, constitution,
+                                     intelligence, wisdom, charisma,
+                                     proficiency);
+}
+
+int Character::getSaveModifier(const std::string& ability) const
+{
+    return features.getSaveModifier(ability,
+                                    strength, dexterity, constitution,
+                                    intelligence, wisdom, charisma,
+                                    proficiency);
 }
 
 

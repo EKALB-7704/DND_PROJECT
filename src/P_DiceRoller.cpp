@@ -99,6 +99,16 @@ D20RollResult DiceRoller::rollD20(D20Mode mode)
     return result;
 }
 
+// Roll a d20 test and add its modifier.
+CheckRollResult DiceRoller::rollCheck(D20Mode mode, int modifier)
+{
+    CheckRollResult result{};
+    result.d20 = rollD20(mode);
+    result.modifier = modifier;
+    result.total = result.d20.chosenRoll + modifier;
+    return result;
+}
+
 // Main interactive menu flow for the standalone dice roller.
 void DiceRoller::promptAndRoll(ConsoleIO& io)
 {

@@ -29,6 +29,11 @@ private:
     void restCharacter(Character& c);
     void manageInventory(Character& c);
     void manageFeatures(Character& c);
+    void rollChecks(Character& c);
+
+    // Prompts for normal/advantage/disadvantage, rolls a d20 check with the
+    // given modifier on the shared roller, and prints the breakdown.
+    CheckRollResult reportCheck(const std::string& label, int modifier);
 
     std::string abilityScores[6] = {"Strength: ", "Dexterity: ", "Constitution: ", "Intelligence: ", "Wisdom: ", "Charisma: "};
     std::string editCharDetailsLabels[9] = {"Name", "Race", "Class", "Background", "Alignment", "Age", "Weight", "Level", "Speed"};

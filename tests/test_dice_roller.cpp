@@ -52,3 +52,23 @@ TEST(DiceRollerTest, D20DisadvantageUsesLowerRoll) {
     const D20RollResult result = roller.rollD20(D20Mode::Disadvantage);
     EXPECT_EQ(result.chosenRoll, std::min(result.firstRoll, result.secondRoll));
 }
+
+// A check's total is always the chosen d20 plus the modifier, in every mode.
+TEST(DiceRollerTest, RollCheckAddsModifierToChosenRoll) {
+    DiceRoller roller;
+    for (D20Mode mode : {D20Mode::Normal, D20Mode::Advantage, D20Mode::Disadvantage}) {
+        const CheckRollResult result = roller.rollCheck(mode, 4);
+        EXPECT_EQ(result.modifier, 4);
+        EXPECT_EQ(result.total, result.d20.chosenRoll + 4);
+        EXPECT_GE(result.d20.chosenRoll, 1);
+        EXPECT_LE(result.d20.chosenRoll, 20);
+    }
+}
+
+// Negative modifiers subtract, and advantage still keeps the higher die.
+TEST(DiceRollerTest, RollCheckHandlesNegativeModifierWithAdvantage) {
+    DiceRoller roller;
+    const CheckRollResult result = roller.rollCheck(D20Mode::Advantage, -2);
+    EXPECT_EQ(result.d20.chosenRoll, std::max(result.d20.firstRoll, result.d20.secondRoll));
+    EXPECT_EQ(result.total, result.d20.chosenRoll - 2);
+}

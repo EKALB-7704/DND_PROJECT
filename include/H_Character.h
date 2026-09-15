@@ -152,6 +152,12 @@ public:
     void setSpeed(int spd);
     int getPassivePerception() const;
 
+    // Check modifiers from this character's own scores and proficiency, so
+    // callers need not pass all six ability scores through by hand.
+    // Unknown skill or ability names give +0, as CharacterFeatures does.
+    int getSkillModifier(const std::string& skillName) const;
+    int getSaveModifier(const std::string& ability) const;
+
     void setStats(int new_AS, int ability_to_change);
 
     // Inventory

@@ -201,6 +201,32 @@ TEST(CharacterTest, PassivePerceptionUsesWisdomAndPerceptionProficiency) {
     EXPECT_EQ(c.getPassivePerception(), 19);
 }
 
+// Skill and save modifiers come from the character's own scores and proficiency.
+TEST(CharacterTest, SkillModifierUsesLinkedAbilityAndRank) {
+    Character c = makeCharacter();              // DEX 14 (+2), proficiency +3
+    EXPECT_EQ(c.getSkillModifier("Stealth"), 2);
+
+    c.getFeatures().setSkillRank("Stealth", SkillRank::Proficient);
+    EXPECT_EQ(c.getSkillModifier("Stealth"), 5);
+
+    c.getFeatures().setSkillRank("Stealth", SkillRank::Expertise);
+    EXPECT_EQ(c.getSkillModifier("Stealth"), 8);
+}
+
+TEST(CharacterTest, SaveModifierAddsProficiencyOnlyWhenProficient) {
+    Character c = makeCharacter();              // STR 16 (+3), proficiency +3
+    EXPECT_EQ(c.getSaveModifier("STR"), 3);
+
+    c.getFeatures().setSaveProficiency("STR", true);
+    EXPECT_EQ(c.getSaveModifier("STR"), 6);
+}
+
+TEST(CharacterTest, UnknownSkillOrSaveHasZeroModifier) {
+    Character c = makeCharacter();
+    EXPECT_EQ(c.getSkillModifier("Juggling"), 0);
+    EXPECT_EQ(c.getSaveModifier("LUCK"), 0);
+}
+
 // ── Ability modifier formula: floor(score/2) - 5 ─────────────────────────────
 // D&D standard modifiers: 10→+0, 12→+1, 8→-1, 20→+5, 1→-5
 

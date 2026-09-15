@@ -20,6 +20,14 @@ struct D20RollResult {
     int chosenRoll;
 };
 
+struct CheckRollResult {
+    // A d20 test: the die (with both rolls, for advantage/disadvantage), the
+    // modifier added to it, and the total the table compares against a DC.
+    D20RollResult d20;
+    int modifier;
+    int total;
+};
+
 class DiceRoller {
 private:
     // Reused random-number engine for all dice rolls in this session.
@@ -33,6 +41,10 @@ public:
     std::vector<int> rollDice(int count, int sides);
     int totalRoll(const std::vector<int>& rolls) const;
     D20RollResult rollD20(D20Mode mode);
+
+    // Skill checks, saving throws, ability checks and initiative are all a
+    // d20 plus a modifier; this rolls one and adds the modifier.
+    CheckRollResult rollCheck(D20Mode mode, int modifier);
 
     // Handles user prompts for choosing the die type and displaying results.
     void promptAndRoll(ConsoleIO& io);
