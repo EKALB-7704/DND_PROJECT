@@ -10,6 +10,7 @@ A command-line D&D character management system written in C++. Tracks everything
 - **Character features**: Skills (18 standard skills with proficiency/expertise), saving throw proficiencies, feats, racial traits, and language tracking
 - **Wallet**: Five-denomination currency tracking (cp, sp, ep, gp, pp)
 - **Dice roller**: Generic dN rolling plus D20 advantage/disadvantage modes
+- **Checks and saves**: Roll skill checks, saving throws, ability checks and initiative straight from the character editor, with the sheet's modifiers applied
 - **Persistence**: Each character is saved to a per-character directory of structured text files; characters survive across sessions
 - **Exception handling**: Custom exception hierarchy; the program exits cleanly with error code 1 on unrecoverable errors
 
@@ -29,7 +30,8 @@ A command-line D&D character management system written in C++. Tracks everything
 DND_PROJECT/
 ├── src/               # Source files; the character editor is split by menu
 │                      # section (P_EditHealth, P_EditSpells, P_ManageInventory,
-│                      # P_ManageFeatures, P_EditDetails, P_Rest, P_GlobalSpells)
+│                      # P_ManageFeatures, P_EditDetails, P_Rest, P_RollChecks,
+│                      # P_GlobalSpells)
 ├── include/           # Header files and custom exception hierarchy
 ├── tests/             # Google Test unit tests (13 test suites)
 ├── data/
@@ -144,10 +146,16 @@ loops until `0`, and short/long rest moved out of the Spells submenu into their
 own top-level "Rest" entry, since a rest restores HP and hit dice as well as
 spell slots.
 
+The dice roller is now wired into the character sheet: editor option 8,
+"Roll checks and saves", rolls skill checks, saving throws, ability checks
+and initiative with advantage/disadvantage, adding the modifier the sheet
+already computes (ability modifier plus proficiency or expertise).
+
 Planned features, once the above lands:
 
 - Dungeon Master mode: manage both player characters and NPCs within a campaign
-- Wire the dice roller into skill checks, saving throws, attacks, and initiative
+- Wire the dice roller into attack and damage rolls (checks, saves and
+  initiative are done)
 - XP tracking and level-up (proficiency bonus is derivable from level)
 - Character deletion
 
