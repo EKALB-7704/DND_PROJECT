@@ -23,6 +23,11 @@ bool isWarlockClass(const Character& character)
     return toLowerCopy(character.getClass()) == "warlock";
 }
 
+std::string signedValue(int value)
+{
+    return (value >= 0 ? "+" : "") + std::to_string(value);
+}
+
 D20Mode promptD20Mode(ConsoleIO& io)
 {
     io.os() << "1. Normal\n";

@@ -50,6 +50,9 @@ public:
     void manageGlobalSpells();
     bool hasCharacters() const;
 
+    // The main menu's standalone dice roller, on the same roller as the editor.
+    void rollDice();
+
     // Read-only view of the loaded roster.
     const std::vector<Character>& getCharacters() const;
 

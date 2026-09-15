@@ -15,11 +15,7 @@ const std::string kAbilityCodes[6] = {"STR", "DEX", "CON", "INT", "WIS", "CHA"};
 const std::string kAbilityNames[6] = {"Strength", "Dexterity", "Constitution",
                                       "Intelligence", "Wisdom", "Charisma"};
 
-// Modifiers are always shown with a sign, as they are on a character sheet.
-std::string signedValue(int value)
-{
-    return (value >= 0 ? "+" : "") + std::to_string(value);
-}
+using ManagerHelpers::signedValue;
 
 // Ability scores in the fixed STR/DEX/CON/INT/WIS/CHA order.
 int abilityScoreAt(const Character& c, int index)

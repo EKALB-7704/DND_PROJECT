@@ -93,6 +93,9 @@ public:
     const std::vector<std::string>& getConditions() const;
     std::string getHitDice() const;
     int getHitDiceNum() const;
+    // Sides on the hit die ("d10" -> 10), or 0 if the stored value is not a
+    // rollable dN (e.g. "d0", which the dN format check lets through).
+    int getHitDieSides() const;
 
     void setHitDiceNum(int n);
 

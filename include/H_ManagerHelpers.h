@@ -21,6 +21,9 @@ std::string toLowerCopy(const std::string& value);
 // Warlocks are the only class here whose spell slots reset on a short rest.
 bool isWarlockClass(const Character& character);
 
+// Modifiers are always shown with a sign, as they are on a character sheet.
+std::string signedValue(int value);
+
 // Prompts for normal/advantage/disadvantage. Re-prompts until valid.
 D20Mode promptD20Mode(ConsoleIO& io);
 

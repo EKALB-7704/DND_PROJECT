@@ -2,7 +2,6 @@
 #include "H_CharacterManager.h"
 #include "H_CharacterFeatures.h"
 #include "H_ConsoleIO.h"
-#include "H_DiceRoller.h"
 #include "H_SpellBook.h"
 #include "H_Colours.h"
 #include "H_DndExceptions.h"
@@ -17,8 +16,6 @@ int main() {
     // Initialize character and colour manager objects
     CharacterManager manager(io);
     ColourManager col_manager;
-    // Dice roller is available from the main menu as a utility tool.
-    DiceRoller diceRoller;
 
     int choice;
 
@@ -73,7 +70,8 @@ int main() {
             }
             case 3: manager.manageGlobalSpells(); break;
             case 4: col_manager.ChangeColour(io); break;
-            case 5: diceRoller.promptAndRoll(io); break;
+            // Rolls on the manager's roller, shared with the character editor.
+            case 5: manager.rollDice(); break;
             case 0: break;
         }
 

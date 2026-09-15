@@ -461,6 +461,14 @@ void Character::clearConditions()
 }
 void Character::setHitDice(const std::string& new_hit_dice){hitDice = new_hit_dice;}
 int Character::getHitDiceNum() const { return hitDiceNum; }
+
+int Character::getHitDieSides() const
+{
+    // Capping the digit count keeps std::stoi clear of out_of_range; no real
+    // die has more than three digits of sides.
+    if (!Validate::isHitDice(hitDice) || hitDice.size() > 4) return 0;
+    return std::stoi(hitDice.substr(1));
+}
 void Character::setHitDiceNum(int n) { hitDiceNum = (n < 0 ? 0 : (n > level ? level : n)); }
 
 

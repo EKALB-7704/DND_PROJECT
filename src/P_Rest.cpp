@@ -1,6 +1,8 @@
 #include "H_CharacterManager.h"
 #include "H_ManagerHelpers.h"
+#include <algorithm>
 #include <iostream>
+#include <vector>
 
 // Character editor: short and long rests.
 //
@@ -55,9 +57,33 @@ void CharacterManager::restCharacter(Character& c)
 
                 if (toSpend > 0)
                 {
-                    const int hpGained = io.readInt(
-                        "Enter total HP recovered (roll " + std::to_string(toSpend) +
-                        c.getHitDice() + " + CON modifier per die): ", 0, 100000);
+                    int hpGained = 0;
+                    const int sides = c.getHitDieSides();
+                    if (sides > 0)
+                    {
+                        // Each die heals its roll plus the CON modifier, and
+                        // never less than 0 -- a low CON cannot make resting hurt.
+                        const int conMod = Character::getAbilityModifier(c.getConstitution());
+                        const std::vector<int> rolls = dice.rollDice(toSpend, sides);
+
+                        io.os() << "Rolling " << toSpend << c.getHitDice() << ", "
+                                << ManagerHelpers::signedValue(conMod) << " CON per die\n";
+                        io.os() << "Rolls: ";
+                        for (size_t i = 0; i < rolls.size(); i++)
+                        {
+                            io.os() << rolls[i] << (i + 1 < rolls.size() ? ", " : "\n");
+                            hpGained += std::max(0, rolls[i] + conMod);
+                        }
+                        io.os() << "HP recovered: " << hpGained << "\n";
+                    }
+                    else
+                    {
+                        // The hit die is not a rollable dN (e.g. "d0"), so fall
+                        // back to asking for a total rolled at the table.
+                        hpGained = io.readInt(
+                            "Enter total HP recovered (roll " + std::to_string(toSpend) +
+                            c.getHitDice() + " + CON modifier per die): ", 0, 100000);
+                    }
                     if (hpGained > 0)
                     {
                         int newHp = c.getCurrentHP() + hpGained;

@@ -63,6 +63,11 @@ bool CharacterManager::hasCharacters() const
     return !characters.empty();
 }
 
+void CharacterManager::rollDice()
+{
+    dice.promptAndRoll(io);
+}
+
 const std::vector<Character>& CharacterManager::getCharacters() const
 {
     return characters;

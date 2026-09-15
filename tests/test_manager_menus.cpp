@@ -53,6 +53,30 @@ std::string editOnly(const std::string& editorScript) {
     return std::string(kCreateGimli) + "1\n" + editorScript;
 }
 
+// The integer printed after the last occurrence of `key`, or INT_MIN if absent.
+int valueAfter(const std::string& text, const std::string& key) {
+    const auto pos = text.rfind(key);
+    if (pos == std::string::npos) return std::numeric_limits<int>::min();
+    return std::stoi(text.substr(pos + key.size()));
+}
+
+// Asserts the last check printed was a legal d20 plus `modifier`.
+void expectCheckTotal(const std::string& text, int modifier) {
+    const bool hasChosen = text.rfind("Chosen roll: ") != std::string::npos;
+    const int roll = valueAfter(text, hasChosen ? "Chosen roll: " : "Roll: ");
+    ASSERT_GE(roll, 1);
+    ASSERT_LE(roll, 20);
+    EXPECT_EQ(valueAfter(text, "Total: "), roll + modifier);
+}
+
+size_t countOf(const std::string& text, const std::string& needle) {
+    size_t n = 0;
+    for (auto pos = text.find(needle); pos != std::string::npos;
+         pos = text.find(needle, pos + needle.size()))
+        ++n;
+    return n;
+}
+
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -458,19 +482,42 @@ TEST(ManagerMenuTest, RestMenuLongRestRestoresEverything) {
     EXPECT_EQ(h.only().getHitDiceNum(), h.only().getLevel());
 }
 
-TEST(ManagerMenuTest, RestMenuShortRestSpendsHitDiceForHp) {
-    // Drop to 10 HP, short rest, spend 2 hit dice, report 12 HP recovered.
-    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n2\n2\n12\n0\n0\n"));
+TEST(ManagerMenuTest, RestMenuShortRestRollsHitDiceForHp) {
+    // Drop to 10 HP, short rest, spend 2 hit dice. The rest rolls them:
+    // Gimli's d10 plus CON +2 per die, so each die heals 3-12.
+    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n2\n2\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
-    EXPECT_EQ(h.only().getCurrentHP(), 22);
+    const std::string out = h.written();
+    const auto rollsAt = out.rfind("Rolls: ");
+    ASSERT_NE(rollsAt, std::string::npos);
+    int first = 0, second = 0;
+    ASSERT_EQ(std::sscanf(out.c_str() + rollsAt, "Rolls: %d, %d", &first, &second), 2);
+    for (int roll : {first, second}) {
+        EXPECT_GE(roll, 1);
+        EXPECT_LE(roll, 10);
+    }
+
+    const int healed = (first + 2) + (second + 2);
+    EXPECT_EQ(valueAfter(out, "HP recovered: "), healed);
+    EXPECT_EQ(h.only().getCurrentHP(), 10 + healed);   // at most 34, under max 44
     EXPECT_EQ(h.only().getHitDiceNum(), h.only().getLevel() - 2);
+}
+
+TEST(ManagerMenuTest, RestMenuShortRestHealingNeverExceedsMaxHp) {
+    // At 43/44 HP, five hit dice always roll more than the 1 HP missing.
+    ManagerHarness h(editOnly("2\n2\n43\n0\n7\n2\n5\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_EQ(h.only().getCurrentHP(), h.only().getMaxHP());
+    EXPECT_EQ(h.only().getHitDiceNum(), 0);
 }
 
 TEST(ManagerMenuTest, RestMenuShortRestCannotSpendMoreDiceThanAvailable) {
     // Only 5 hit dice exist at level 5, so 99 is refused and re-prompted.
-    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n2\n99\n1\n6\n0\n0\n"));
+    ManagerHarness h(editOnly("2\n2\n10\n0\n7\n2\n99\n1\n0\n0\n"));
     h.mgr.createCharacter();
     h.mgr.editCharacter();
 
@@ -503,34 +550,6 @@ TEST(ManagerMenuTest, SpellsSubmenuNoLongerOffersRests) {
 // The d20 is random, so these read the printed roll and total back and check
 // that total == chosen roll + the expected modifier. Gimli's sheet:
 // STR 16 (+3), DEX 12 (+1), CON 15 (+2), initiative +1, proficiency +3.
-
-namespace {
-
-// The integer printed after the last occurrence of `key`, or INT_MIN if absent.
-int valueAfter(const std::string& text, const std::string& key) {
-    const auto pos = text.rfind(key);
-    if (pos == std::string::npos) return std::numeric_limits<int>::min();
-    return std::stoi(text.substr(pos + key.size()));
-}
-
-// Asserts the last check printed was a legal d20 plus `modifier`.
-void expectCheckTotal(const std::string& text, int modifier) {
-    const bool hasChosen = text.rfind("Chosen roll: ") != std::string::npos;
-    const int roll = valueAfter(text, hasChosen ? "Chosen roll: " : "Roll: ");
-    ASSERT_GE(roll, 1);
-    ASSERT_LE(roll, 20);
-    EXPECT_EQ(valueAfter(text, "Total: "), roll + modifier);
-}
-
-size_t countOf(const std::string& text, const std::string& needle) {
-    size_t n = 0;
-    for (auto pos = text.find(needle); pos != std::string::npos;
-         pos = text.find(needle, pos + needle.size()))
-        ++n;
-    return n;
-}
-
-} // namespace
 
 TEST(ManagerMenuTest, RollChecksSkillCheckUsesSkillProficiency) {
     // Make Stealth (skill 17, DEX) proficient, then roll it: +1 DEX +3 prof.
@@ -590,4 +609,18 @@ TEST(ManagerMenuTest, RollChecksCancellingSkillSelectionRollsNothing) {
     h.mgr.editCharacter();
 
     EXPECT_EQ(h.written().find("Total: "), std::string::npos);
+}
+
+// ---------------------------------------------------------------------------
+// Main-menu dice roller
+// ---------------------------------------------------------------------------
+
+// The main menu's roller now goes through the manager, and so through ConsoleIO.
+TEST(ManagerMenuTest, RollDiceRollsRequestedDiceThroughConsoleIO) {
+    ManagerHarness h("6\n3\n");
+    h.mgr.rollDice();
+
+    const int total = valueAfter(h.written(), "Total: ");
+    EXPECT_GE(total, 3);
+    EXPECT_LE(total, 18);
 }

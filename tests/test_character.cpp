@@ -227,6 +227,22 @@ TEST(CharacterTest, UnknownSkillOrSaveHasZeroModifier) {
     EXPECT_EQ(c.getSaveModifier("LUCK"), 0);
 }
 
+// The hit die's sides drive the short-rest roll; anything unrollable is 0.
+TEST(CharacterTest, HitDieSidesParsesDnAndRejectsUnrollableValues) {
+    Character c = makeCharacter();
+    c.setHitDice("d10");
+    EXPECT_EQ(c.getHitDieSides(), 10);
+    c.setHitDice("d6");
+    EXPECT_EQ(c.getHitDieSides(), 6);
+
+    c.setHitDice("d0");          // passes the dN format check, but has no sides
+    EXPECT_EQ(c.getHitDieSides(), 0);
+    c.setHitDice("5d10");        // count-prefixed form is not a stored hit die
+    EXPECT_EQ(c.getHitDieSides(), 0);
+    c.setHitDice("d99999999999"); // would overflow std::stoi
+    EXPECT_EQ(c.getHitDieSides(), 0);
+}
+
 // ── Ability modifier formula: floor(score/2) - 5 ─────────────────────────────
 // D&D standard modifiers: 10→+0, 12→+1, 8→-1, 20→+5, 1→-5
 
