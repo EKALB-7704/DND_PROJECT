@@ -114,7 +114,7 @@ void CharacterManager::editCharacter() {
     // Display edit menu
     do {
         io.os() << "\n=== " << c.getName() << " Editor ===\n";
-        io.os() << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n7. Rest (short / long) \n8. Roll checks and saves \n0. Back \n";
+        io.os() << "1. Character details \n2. Character health \n3. Inventory \n4. Ability scores \n5. Spells \n6. Features and skills \n7. Rest (short / long) \n8. Roll checks, saves and attacks \n0. Back \n";
         choice = io.readMenuChoice("Choice: ", 8);
 
         if (choice == 1) // Character details
@@ -145,7 +145,7 @@ void CharacterManager::editCharacter() {
         {
             restCharacter(c);
         }
-        else if (choice == 8) // Skill checks, saving throws, ability checks, initiative
+        else if (choice == 8) // Checks, saves, initiative and weapon attacks
         {
             rollChecks(c);
         }

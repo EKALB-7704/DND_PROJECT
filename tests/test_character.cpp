@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "H_Character.h"
+#include "H_Weapon.h"
 
 // Helper: builds a minimal valid Character for use across tests
 static Character makeCharacter(
@@ -241,6 +242,31 @@ TEST(CharacterTest, HitDieSidesParsesDnAndRejectsUnrollableValues) {
     EXPECT_EQ(c.getHitDieSides(), 0);
     c.setHitDice("d99999999999"); // would overflow std::stoi
     EXPECT_EQ(c.getHitDieSides(), 0);
+}
+
+// Weapon attacks use STR for melee, DEX for ranged, the better of both for finesse.
+TEST(CharacterTest, WeaponAbilityModifierFollowsWeaponTypeAndFinesse) {
+    const Character strong = makeCharacter("Brute", "Human", "Fighter", 5,
+                                           /*str*/ 16, /*dex*/ 10);   // +3 / +0
+    const Character nimble = makeCharacter("Rogue", "Elf", "Rogue", 5,
+                                           /*str*/ 8, /*dex*/ 18);    // -1 / +4
+
+    const Weapon longsword("Longsword", "", 3.0f, 1, 15, "Common", false,
+                           "1d8", "Slashing", "Martial", "Melee", "Versatile", "5 ft");
+    const Weapon longbow("Longbow", "", 2.0f, 1, 50, "Common", false,
+                         "1d8", "Piercing", "Martial", "Ranged", "Heavy, Two-Handed", "150/600 ft");
+    const Weapon rapier("Rapier", "", 2.0f, 1, 25, "Common", false,
+                        "1d8", "Piercing", "Martial", "melee", "FINESSE", "5 ft");
+
+    EXPECT_EQ(strong.getWeaponAbilityModifier(longsword), 3);
+    EXPECT_EQ(nimble.getWeaponAbilityModifier(longsword), -1);
+
+    EXPECT_EQ(strong.getWeaponAbilityModifier(longbow), 0);
+    EXPECT_EQ(nimble.getWeaponAbilityModifier(longbow), 4);
+
+    // Finesse takes whichever is higher, matched regardless of case.
+    EXPECT_EQ(strong.getWeaponAbilityModifier(rapier), 3);
+    EXPECT_EQ(nimble.getWeaponAbilityModifier(rapier), 4);
 }
 
 // ── Ability modifier formula: floor(score/2) - 5 ─────────────────────────────

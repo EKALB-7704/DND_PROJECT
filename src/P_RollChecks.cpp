@@ -1,8 +1,11 @@
 #include "H_CharacterManager.h"
 #include "H_ManagerHelpers.h"
+#include "H_Weapon.h"
 #include <iostream>
+#include <vector>
 
-// Character editor: skill checks, saving throws, ability checks and initiative.
+// Character editor: skill checks, saving throws, ability checks, initiative
+// and weapon attacks.
 
 // Every one of these is the same roll -- a d20 plus a modifier -- and the
 // modifiers already exist on the character sheet. This menu is where they
@@ -72,13 +75,14 @@ void CharacterManager::rollChecks(Character& c)
 
     do
     {
-        io.os() << "\n=== Roll Checks And Saves ===\n";
+        io.os() << "\n=== Roll Checks, Saves And Attacks ===\n";
         io.os() << "1. Skill check\n";
         io.os() << "2. Saving throw\n";
         io.os() << "3. Ability check\n";
         io.os() << "4. Initiative (" << signedValue(c.getInitiative()) << ")\n";
+        io.os() << "5. Weapon attack\n";
         io.os() << "0. Back\n";
-        choice = io.readMenuChoice("Choice: ", 4);
+        choice = io.readMenuChoice("Choice: ", 5);
 
         if (choice == 1) // Skill check
         {
@@ -135,5 +139,98 @@ void CharacterManager::rollChecks(Character& c)
             // Initiative is stored on the sheet as a bonus, entered at creation.
             reportCheck("Initiative", c.getInitiative());
         }
+        else if (choice == 5) // Weapon attack
+        {
+            attackWithWeapon(c);
+        }
     } while (choice != 0);
+}
+
+// Attack roll, then damage on a hit.
+//
+// The attack is a d20 check like any other: the weapon's ability modifier,
+// plus proficiency if the character is proficient with it. Damage adds the
+// same ability modifier but never proficiency. A natural 20 always hits and
+// doubles the damage dice; a natural 1 always misses. Anything in between
+// depends on the target's AC, which only the table knows, so it asks.
+void CharacterManager::attackWithWeapon(Character& c)
+{
+    // Weapons are listed by position among the weapons, not the whole
+    // inventory, so the numbering has no gaps where armor or gear sits.
+    std::vector<const Weapon*> weapons;
+    for (int i = 1; i <= c.getInventory().size(); i++)
+    {
+        if (const auto* weapon = dynamic_cast<const Weapon*>(&c.getInventory().getItem(i)))
+        {
+            weapons.push_back(weapon);
+        }
+    }
+
+    if (weapons.empty())
+    {
+        io.os() << "No weapons in the inventory. Add one under Inventory first.\n";
+        return;
+    }
+
+    io.os() << "\n=== Weapons ===\n";
+    for (size_t i = 0; i < weapons.size(); i++)
+    {
+        io.os() << i + 1 << ". " << weapons[i]->getName() << " - "
+                << weapons[i]->getDamageDice() << " " << weapons[i]->getDamageType()
+                << " [" << signedValue(c.getWeaponAbilityModifier(*weapons[i])) << "]\n";
+    }
+    const int weaponIndex = io.readInt("Weapon (0 to cancel): ", 0,
+                                       static_cast<int>(weapons.size()));
+    if (weaponIndex == 0) return;
+
+    const Weapon& weapon = *weapons[weaponIndex - 1];
+    const int abilityMod = c.getWeaponAbilityModifier(weapon);
+
+    // The sheet does not record weapon proficiencies, so ask each time.
+    const bool proficient = io.readYesNo("Proficient with " + weapon.getName() + "? (y/n): ");
+    const int attackMod = abilityMod + (proficient ? c.getProficiency() : 0);
+
+    const CheckRollResult attack = reportCheck(weapon.getName() + " attack", attackMod);
+
+    const bool critical = attack.d20.chosenRoll == 20;
+    if (attack.d20.chosenRoll == 1)
+    {
+        io.os() << "The attack misses.\n";
+        return;
+    }
+    if (critical)
+    {
+        io.os() << "Critical hit: damage dice are doubled.\n";
+    }
+    else if (!io.readYesNo("Does " + std::to_string(attack.total) +
+                           " hit the target's AC? (y/n): "))
+    {
+        io.os() << "The attack misses.\n";
+        return;
+    }
+
+    io.os() << "\n=== " << weapon.getName() << " damage ===\n";
+
+    DiceExpression expr;
+    if (!parseDiceExpression(weapon.getDamageDice(), expr))
+    {
+        // Free-text damage the parser does not understand, such as a
+        // versatile "1d8/1d10": fall back to a total rolled at the table.
+        const int damage = io.readInt("Could not roll \"" + weapon.getDamageDice() +
+                                      "\". Enter the damage rolled: ", 0, 100000);
+        io.os() << "Damage: " << damage << " " << weapon.getDamageType() << "\n";
+        return;
+    }
+
+    const DamageRollResult damage = dice.rollDamage(expr, abilityMod, critical);
+    if (!damage.rolls.empty())
+    {
+        io.os() << "Damage rolls: ";
+        for (size_t i = 0; i < damage.rolls.size(); i++)
+        {
+            io.os() << damage.rolls[i] << (i + 1 < damage.rolls.size() ? ", " : "\n");
+        }
+    }
+    io.os() << "Modifier: " << signedValue(damage.modifier) << "\n";
+    io.os() << "Damage: " << damage.total << " " << weapon.getDamageType() << "\n";
 }

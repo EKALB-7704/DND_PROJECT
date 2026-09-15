@@ -30,6 +30,7 @@ private:
     void manageInventory(Character& c);
     void manageFeatures(Character& c);
     void rollChecks(Character& c);
+    void attackWithWeapon(Character& c);
 
     // Prompts for normal/advantage/disadvantage, rolls a d20 check with the
     // given modifier on the shared roller, and prints the breakdown.

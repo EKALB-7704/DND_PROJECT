@@ -1,4 +1,6 @@
 #include "H_DiceRoller.h"
+#include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <iostream>
 #include <limits>
@@ -26,6 +28,21 @@ namespace {
 // Restrict the interactive roller to the standard dice used in this project.
 // Single source of truth: the prompt validates against this same list.
 const std::vector<int> kSupportedDice = {4, 6, 8, 10, 12, 20, 100};
+
+// Reads one to three digits starting at `pos`, advancing past them. Capping
+// the length keeps std::stoi clear of out_of_range.
+bool readSmallNumber(const std::string& text, size_t& pos, int& out)
+{
+    const size_t start = pos;
+    while (pos < text.size() && std::isdigit(static_cast<unsigned char>(text[pos])))
+    {
+        pos++;
+    }
+    const size_t length = pos - start;
+    if (length == 0 || length > 3) return false;
+    out = std::stoi(text.substr(start, length));
+    return true;
+}
 
 // Small timed animation used only by the interactive menu flow.
 void showRollAnimation()
@@ -106,6 +123,73 @@ CheckRollResult DiceRoller::rollCheck(D20Mode mode, int modifier)
     result.d20 = rollD20(mode);
     result.modifier = modifier;
     result.total = result.d20.chosenRoll + modifier;
+    return result;
+}
+
+// Parse a written damage roll like "2d6+1", "d8" or a flat "1".
+bool parseDiceExpression(const std::string& text, DiceExpression& out)
+{
+    // Weapon damage is free text, so ignore spacing and the case of the 'd'.
+    std::string s;
+    for (char ch : text)
+    {
+        if (!std::isspace(static_cast<unsigned char>(ch)))
+        {
+            s += static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+        }
+    }
+
+    DiceExpression expr;
+    size_t pos = 0;
+    const size_t d = s.find('d');
+
+    if (d == std::string::npos)
+    {
+        // No dice at all: flat damage.
+        if (!readSmallNumber(s, pos, expr.bonus) || pos != s.size()) return false;
+        out = expr;
+        return true;
+    }
+
+    // "d8" means one die; otherwise the count must run right up to the 'd'.
+    if (d == 0)
+    {
+        expr.count = 1;
+    }
+    else if (!readSmallNumber(s, pos, expr.count) || pos != d)
+    {
+        return false;
+    }
+
+    pos = d + 1;
+    if (!readSmallNumber(s, pos, expr.sides)) return false;
+
+    if (pos < s.size())
+    {
+        const char sign = s[pos++];
+        int bonus = 0;
+        if ((sign != '+' && sign != '-') || !readSmallNumber(s, pos, bonus)) return false;
+        expr.bonus = (sign == '-') ? -bonus : bonus;
+    }
+
+    if (pos != s.size()) return false;
+    if (expr.count < 1 || expr.count > 100 || expr.sides < 1 || expr.sides > 100) return false;
+
+    out = expr;
+    return true;
+}
+
+// Roll damage, doubling the dice (not the modifier) on a critical hit.
+DamageRollResult DiceRoller::rollDamage(const DiceExpression& expr, int modifier, bool critical)
+{
+    DamageRollResult result{};
+    if (expr.count > 0)
+    {
+        result.rolls = rollDice(critical ? expr.count * 2 : expr.count, expr.sides);
+    }
+    result.modifier = modifier + expr.bonus;
+    // A penalty can outweigh a low roll, but damage never heals the target.
+    result.total = std::max(0, totalRoll(result.rolls) + result.modifier);
     return result;
 }
 

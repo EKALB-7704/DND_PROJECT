@@ -72,3 +72,78 @@ TEST(DiceRollerTest, RollCheckHandlesNegativeModifierWithAdvantage) {
     EXPECT_EQ(result.d20.chosenRoll, std::max(result.d20.firstRoll, result.d20.secondRoll));
     EXPECT_EQ(result.total, result.d20.chosenRoll - 2);
 }
+
+// ---------------------------------------------------------------------------
+// Damage expressions and damage rolls
+// ---------------------------------------------------------------------------
+
+namespace {
+DiceExpression parsed(const std::string& text) {
+    DiceExpression e;
+    EXPECT_TRUE(parseDiceExpression(text, e)) << text;
+    return e;
+}
+}
+
+TEST(DiceExpressionTest, ParsesTheFormsWeaponsAreWrittenIn) {
+    DiceExpression e = parsed("1d6");
+    EXPECT_EQ(e.count, 1); EXPECT_EQ(e.sides, 6); EXPECT_EQ(e.bonus, 0);
+
+    e = parsed("d8");                         // count defaults to one die
+    EXPECT_EQ(e.count, 1); EXPECT_EQ(e.sides, 8);
+
+    e = parsed("2d6+1");
+    EXPECT_EQ(e.count, 2); EXPECT_EQ(e.sides, 6); EXPECT_EQ(e.bonus, 1);
+
+    e = parsed(" 1D10 - 2 ");                 // spacing and case are ignored
+    EXPECT_EQ(e.count, 1); EXPECT_EQ(e.sides, 10); EXPECT_EQ(e.bonus, -2);
+
+    e = parsed("1");                          // flat damage, e.g. a blowgun
+    EXPECT_EQ(e.count, 0); EXPECT_EQ(e.bonus, 1);
+}
+
+TEST(DiceExpressionTest, RejectsAnythingItCannotRollExactly) {
+    for (const char* bad : {"", "d", "1d", "0d6", "1d0", "1d101", "101d6",
+                            "1d8/1d10", "2d6+", "1d6+1+1", "abc", "9999d6", "1d6x"}) {
+        DiceExpression e;
+        e.count = 42;
+        EXPECT_FALSE(parseDiceExpression(bad, e)) << bad;
+        EXPECT_EQ(e.count, 42) << "output must be untouched on failure: " << bad;
+    }
+}
+
+TEST(DiceRollerTest, RollDamageAddsModifierAndExpressionBonus) {
+    DiceRoller roller;
+    // A d1 always rolls 1, so the total is exact: 2 dice + 3 bonus + 2 mod.
+    const DamageRollResult r = roller.rollDamage(parsed("2d1+3"), 2, false);
+    EXPECT_EQ(r.rolls.size(), 2u);
+    EXPECT_EQ(r.modifier, 5);
+    EXPECT_EQ(r.total, 7);
+}
+
+TEST(DiceRollerTest, RollDamageCriticalDoublesDiceButNotModifier) {
+    DiceRoller roller;
+    const DamageRollResult r = roller.rollDamage(parsed("2d1+3"), 2, true);
+    EXPECT_EQ(r.rolls.size(), 4u);
+    EXPECT_EQ(r.modifier, 5);
+    EXPECT_EQ(r.total, 9);
+
+    const DamageRollResult real = roller.rollDamage(parsed("1d8"), 0, true);
+    ASSERT_EQ(real.rolls.size(), 2u);
+    for (int roll : real.rolls) { EXPECT_GE(roll, 1); EXPECT_LE(roll, 8); }
+    EXPECT_EQ(real.total, real.rolls[0] + real.rolls[1]);
+}
+
+TEST(DiceRollerTest, RollDamageNeverGoesBelowZero) {
+    DiceRoller roller;
+    const DamageRollResult r = roller.rollDamage(parsed("1d1"), -5, false);
+    EXPECT_EQ(r.modifier, -5);
+    EXPECT_EQ(r.total, 0);
+}
+
+TEST(DiceRollerTest, RollDamageFlatHasNoDiceEvenOnACritical) {
+    DiceRoller roller;
+    const DamageRollResult r = roller.rollDamage(parsed("1"), 0, true);
+    EXPECT_TRUE(r.rolls.empty());
+    EXPECT_EQ(r.total, 1);
+}

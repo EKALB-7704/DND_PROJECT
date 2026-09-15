@@ -28,6 +28,26 @@ struct CheckRollResult {
     int total;
 };
 
+struct DiceExpression {
+    // A written damage roll such as "2d6+1": count dice of `sides`, plus bonus.
+    // Flat damage like a blowgun's "1" has count 0 and only a bonus.
+    int count = 0;
+    int sides = 0;
+    int bonus = 0;
+};
+
+struct DamageRollResult {
+    std::vector<int> rolls;  // each die rolled, doubled in number on a critical
+    int modifier;            // ability modifier plus the expression's own bonus
+    int total;               // never below 0
+};
+
+// Parses "NdM", "dM", either with an optional "+K"/"-K", or a flat "K".
+// Case and spaces are ignored. Dice counts and sides must be 1-100, and every
+// number at most three digits. Returns false (leaving `out` untouched) for
+// anything else, such as "1d8/1d10".
+bool parseDiceExpression(const std::string& text, DiceExpression& out);
+
 class DiceRoller {
 private:
     // Reused random-number engine for all dice rolls in this session.
@@ -45,6 +65,10 @@ public:
     // Skill checks, saving throws, ability checks and initiative are all a
     // d20 plus a modifier; this rolls one and adds the modifier.
     CheckRollResult rollCheck(D20Mode mode, int modifier);
+
+    // Rolls a damage expression and adds `modifier`. A critical hit rolls
+    // the dice twice over; the modifier and bonus are added once.
+    DamageRollResult rollDamage(const DiceExpression& expr, int modifier, bool critical);
 
     // Handles user prompts for choosing the die type and displaying results.
     void promptAndRoll(ConsoleIO& io);

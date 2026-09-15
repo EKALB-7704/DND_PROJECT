@@ -5,6 +5,8 @@
 #include "H_DndExceptions.h"
 #include "H_Validate.h"
 #include "H_SaveFormat.h"
+#include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <filesystem>
 #include <sstream>
@@ -514,6 +516,25 @@ int Character::getSkillModifier(const std::string& skillName) const
                                      strength, dexterity, constitution,
                                      intelligence, wisdom, charisma,
                                      proficiency);
+}
+
+int Character::getWeaponAbilityModifier(const Weapon& weapon) const
+{
+    // Type and properties are free text ("Ranged", "Finesse, Light"), so
+    // match them without regard to case.
+    auto containsWord = [](std::string text, const std::string& word) {
+        for (char& ch : text)
+            ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+        return text.find(word) != std::string::npos;
+    };
+
+    const int strMod = getAbilityModifier(strength);
+    const int dexMod = getAbilityModifier(dexterity);
+
+    // Finesse lets the wielder choose; nobody chooses the lower one.
+    if (containsWord(weapon.getProperties(), "finesse")) return std::max(strMod, dexMod);
+    if (containsWord(weapon.getWeaponType(), "ranged")) return dexMod;
+    return strMod;
 }
 
 int Character::getSaveModifier(const std::string& ability) const

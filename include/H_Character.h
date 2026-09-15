@@ -13,6 +13,8 @@
 #include "H_Wallet.h"
 #include "H_CharacterFeatures.h"
 
+class Weapon;
+
 enum class DeathSaveOutcome {
     None = 0,
     Stable = 1,
@@ -160,6 +162,11 @@ public:
     // Unknown skill or ability names give +0, as CharacterFeatures does.
     int getSkillModifier(const std::string& skillName) const;
     int getSaveModifier(const std::string& ability) const;
+
+    // The ability modifier a weapon attacks and deals damage with: DEX for
+    // ranged weapons, STR for melee, and the higher of the two for finesse.
+    // Proficiency is not included; it applies to the attack roll only.
+    int getWeaponAbilityModifier(const Weapon& weapon) const;
 
     void setStats(int new_AS, int ability_to_change);
 

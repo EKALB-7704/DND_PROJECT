@@ -4,6 +4,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "H_CharacterManager.h"
 #include "H_ConsoleIO.h"
@@ -623,4 +624,124 @@ TEST(ManagerMenuTest, RollDiceRollsRequestedDiceThroughConsoleIO) {
     const int total = valueAfter(h.written(), "Total: ");
     EXPECT_GE(total, 3);
     EXPECT_LE(total, 18);
+}
+
+// ---------------------------------------------------------------------------
+// Weapon attacks (menu 8 -> 5)
+// ---------------------------------------------------------------------------
+//
+// The d20 decides which prompts follow: a natural 1 misses with no damage, a
+// natural 20 skips the "does it hit?" question. Every script below is written
+// so any leftover answer is rejected by the next menu and re-prompted, so the
+// scripts hold whatever is rolled; the assertions branch on the printed roll.
+
+namespace {
+
+// Adds a weapon through the Inventory menu, then returns to the editor.
+std::string addWeapon(const std::string& name, const std::string& damage) {
+    return "3\n2\n1\n" + name + "\nA weapon\nCommon\n3\n1\n15\nn\n" +
+           damage + "\nSlashing\nMartial\nMelee\nVersatile\n5 ft\n0\n";
+}
+
+int attackRoll(const std::string& out) { return valueAfter(out, "Roll: "); }
+
+std::vector<int> damageRolls(const std::string& out) {
+    std::vector<int> rolls;
+    const auto at = out.rfind("Damage rolls: ");
+    if (at == std::string::npos) return rolls;
+    std::istringstream line(out.substr(at + 14, out.find('\n', at) - at - 14));
+    std::string token;
+    while (std::getline(line, token, ',')) rolls.push_back(std::stoi(token));
+    return rolls;
+}
+
+} // namespace
+
+TEST(ManagerMenuTest, WeaponAttackAddsStrengthAndProficiencyThenRollsDamage) {
+    // Longsword, proficient, normal roll, and "y" it hits.
+    ManagerHarness h(editOnly(addWeapon("Longsword", "1d8") + "8\n5\n1\ny\n1\ny\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    const std::string out = h.written();
+    // To hit: STR +3 plus proficiency +3.
+    EXPECT_NE(out.find("Longsword attack (+6)"), std::string::npos);
+    expectCheckTotal(out.substr(0, out.find("=== Longsword damage")), 6);
+
+    const int roll = attackRoll(out);
+    if (roll == 1) {
+        EXPECT_NE(out.find("The attack misses."), std::string::npos);
+        EXPECT_EQ(out.find("Damage: "), std::string::npos);
+        return;
+    }
+
+    // Damage adds STR +3 but not proficiency; a critical doubles the dice.
+    const std::vector<int> rolls = damageRolls(out);
+    ASSERT_EQ(rolls.size(), roll == 20 ? 2u : 1u);
+    int sum = 0;
+    for (int r : rolls) { EXPECT_GE(r, 1); EXPECT_LE(r, 8); sum += r; }
+    EXPECT_EQ(valueAfter(out, "Damage: "), sum + 3);
+    EXPECT_NE(out.find(" Slashing\n", out.rfind("Damage: ")), std::string::npos);
+}
+
+TEST(ManagerMenuTest, WeaponAttackWithoutProficiencyUsesAbilityOnly) {
+    ManagerHarness h(editOnly(addWeapon("Longsword", "1d8") + "8\n5\n1\nn\n1\nn\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_NE(h.written().find("Longsword attack (+3)"), std::string::npos);
+}
+
+TEST(ManagerMenuTest, WeaponAttackThatMissesRollsNoDamage) {
+    // Answer "n" to the hit question. Only a natural 20 skips that question
+    // (and always hits), so damage appears only then.
+    ManagerHarness h(editOnly(addWeapon("Longsword", "1d8") + "8\n5\n1\ny\n1\nn\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    const std::string out = h.written();
+    if (attackRoll(out) == 20) {
+        EXPECT_NE(out.find("Critical hit"), std::string::npos);
+        EXPECT_NE(out.find("Damage: "), std::string::npos);
+    } else {
+        EXPECT_NE(out.find("The attack misses."), std::string::npos);
+        EXPECT_EQ(out.find("Damage: "), std::string::npos);
+    }
+}
+
+TEST(ManagerMenuTest, WeaponAttackAsksForDamageItCannotParse) {
+    // A versatile "1d8/1d10" is not a single roll, so the damage is typed in.
+    ManagerHarness h(editOnly(addWeapon("Longsword", "1d8/1d10") + "8\n5\n1\ny\n1\ny\n7\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    const std::string out = h.written();
+    if (attackRoll(out) == 1) {
+        EXPECT_EQ(out.find("Damage: "), std::string::npos);
+    } else {
+        EXPECT_NE(out.find("Could not roll \"1d8/1d10\""), std::string::npos);
+        EXPECT_NE(out.find("Damage: 7 Slashing"), std::string::npos);
+    }
+}
+
+TEST(ManagerMenuTest, WeaponAttackListsOnlyWeapons) {
+    // Chain mail first, then a dagger: the dagger is weapon 1, not item 2.
+    ManagerHarness h(editOnly(
+        "3\n2\n2\nChain Mail\nHeavy armor\nCommon\n55\n1\n75\nn\nHeavy\n16\n-1\n13\ny\n0\n" +
+        addWeapon("Dagger", "1d4") + "8\n5\n2\n1\nn\n1\nn\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    const std::string out = h.written();
+    EXPECT_NE(out.find("1. Dagger - 1d4 Slashing [+3]"), std::string::npos);
+    EXPECT_EQ(out.find("Chain Mail -"), std::string::npos);
+    EXPECT_NE(out.find("Dagger attack (+3)"), std::string::npos);   // "2" was rejected
+}
+
+TEST(ManagerMenuTest, WeaponAttackWithNoWeaponsSaysSo) {
+    ManagerHarness h(editOnly("8\n5\n0\n0\n"));
+    h.mgr.createCharacter();
+    h.mgr.editCharacter();
+
+    EXPECT_NE(h.written().find("No weapons in the inventory"), std::string::npos);
 }
