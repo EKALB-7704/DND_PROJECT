@@ -88,9 +88,7 @@ void CharacterManager::editHealth(Character& c)
 
                 io.os() << "\n=== Death Save Roll ===\n";
                 const D20Mode mode = ManagerHelpers::promptD20Mode(io);
-
-                DiceRoller roller;
-                const D20RollResult result = roller.rollD20(mode);
+                const D20RollResult result = dice.rollD20(mode);
 
                 // Show both rolls when advantage/disadvantage is used so the chosen result is clear.
                 if (mode == D20Mode::Normal)

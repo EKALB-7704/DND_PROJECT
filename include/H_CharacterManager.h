@@ -4,6 +4,7 @@
 #include <vector>
 #include "H_Character.h"
 #include "H_ConsoleIO.h"
+#include "H_DiceRoller.h"
 
 class CharacterManager {
 private:
@@ -11,6 +12,10 @@ private:
     // All console reads/writes go through here. Injected so menu flows can be
     // driven from a std::istringstream under test.
     ConsoleIO& io;
+
+    // One roller for every roll the editor makes, so the engine is seeded
+    // once per session rather than once per roll.
+    DiceRoller dice;
 
     std::vector<Character> characters;
 
