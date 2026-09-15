@@ -159,6 +159,9 @@ Planned features, once the above lands:
 - Dungeon Master mode: manage both player characters and NPCs within a campaign
 - Wire the dice roller into attack and damage rolls (checks, saves and
   initiative are done)
+- Short rest: offer "roll for me" or "enter my own roll" when spending hit
+  dice, so players rolling physical dice at the table can type in their total
+  (the rest currently always rolls for you)
 - XP tracking and level-up (proficiency bonus is derivable from level)
 - Character deletion
 
