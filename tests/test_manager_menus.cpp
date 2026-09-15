@@ -130,7 +130,7 @@ TEST(ManagerMenuTest, CreateCharacterRejectsBadHitDiceFormat) {
     ManagerHarness h(
         "Gimli\nDwarf\nFighter\nSoldier\nLawful Good\n"
         "5\n120\n150\n44\n0\n"
-        "0\nD10\nd10\n"                 // "0" is the value that corrupted old saves
+        "0\nD10\nd0\nd10\n"             // "0" corrupted old saves; "d0" has no sides
         "16\n12\n15\n10\n13\n8\n1\n3\n");
     h.mgr.createCharacter();
 

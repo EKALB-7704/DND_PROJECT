@@ -1,6 +1,7 @@
 #include "H_Validate.h"
 
 #include <cctype>
+#include <string>
 
 namespace Validate {
 
@@ -38,12 +39,16 @@ bool isName(const std::string& input)
 
 bool isHitDice(const std::string& input)
 {
-    if (input.size() < 2 || input[0] != 'd') return false;
+    // At most three digits, so the value below cannot overflow.
+    if (input.size() < 2 || input.size() > 4 || input[0] != 'd') return false;
     for (size_t i = 1; i < input.size(); i++)
     {
         if (!std::isdigit(static_cast<unsigned char>(input[i]))) return false;
     }
-    return true;
+    // A leading zero covers "d0" -- which used to pass, and is a die with no
+    // sides to roll -- as well as padded forms like "d08".
+    if (input[1] == '0') return false;
+    return std::stoi(input.substr(1)) <= 100;
 }
 
 } // namespace Validate

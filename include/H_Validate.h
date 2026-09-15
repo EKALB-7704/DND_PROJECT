@@ -21,7 +21,8 @@ bool isText(const std::string& input);
 // Looser than isText: allows digits and symbols (e.g. "Gimli II").
 bool isName(const std::string& input);
 
-// Hit dice format: 'd' followed by at least one digit (e.g. d6, d12, d100).
+// Hit dice format: 'd' followed by a number of sides from 1 to 100, with no
+// leading zero (e.g. d6, d12, d100). Rejects "d0", which cannot be rolled.
 bool isHitDice(const std::string& input);
 
 } // namespace Validate

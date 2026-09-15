@@ -78,8 +78,9 @@ void CharacterManager::restCharacter(Character& c)
                     }
                     else
                     {
-                        // The hit die is not a rollable dN (e.g. "d0"), so fall
-                        // back to asking for a total rolled at the table.
+                        // The hit die is not a valid dN. Input and loading both
+                        // reject that, so this is a safety net: ask for a total
+                        // rolled at the table rather than roll a zero-sided die.
                         hpGained = io.readInt(
                             "Enter total HP recovered (roll " + std::to_string(toSpend) +
                             c.getHitDice() + " + CON modifier per die): ", 0, 100000);

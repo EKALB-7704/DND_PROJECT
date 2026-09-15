@@ -170,7 +170,7 @@ std::string ConsoleIO::readName(const std::string& prompt)
 std::string ConsoleIO::readHitDice(const std::string& prompt)
 {
     return readMatching(prompt, Validate::isHitDice,
-                        "Hit dice must be in the format dN (e.g. d8, d12).");
+                        "Hit dice must be in the format dN, N from 1 to 100 (e.g. d8, d12).");
 }
 
 bool ConsoleIO::readYesNo(const std::string& prompt)

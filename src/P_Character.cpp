@@ -464,9 +464,10 @@ int Character::getHitDiceNum() const { return hitDiceNum; }
 
 int Character::getHitDieSides() const
 {
-    // Capping the digit count keeps std::stoi clear of out_of_range; no real
-    // die has more than three digits of sides.
-    if (!Validate::isHitDice(hitDice) || hitDice.size() > 4) return 0;
+    // isHitDice guarantees 1-100 sides, so the parse below is always safe.
+    // It still has to be checked here: the constructor and setHitDice() take
+    // the string as given, and only the prompts and the loader validate it.
+    if (!Validate::isHitDice(hitDice)) return 0;
     return std::stoi(hitDice.substr(1));
 }
 void Character::setHitDiceNum(int n) { hitDiceNum = (n < 0 ? 0 : (n > level ? level : n)); }

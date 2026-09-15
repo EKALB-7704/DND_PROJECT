@@ -235,7 +235,7 @@ TEST(CharacterTest, HitDieSidesParsesDnAndRejectsUnrollableValues) {
     c.setHitDice("d6");
     EXPECT_EQ(c.getHitDieSides(), 6);
 
-    c.setHitDice("d0");          // passes the dN format check, but has no sides
+    c.setHitDice("d0");          // a die with no sides; setHitDice does not validate
     EXPECT_EQ(c.getHitDieSides(), 0);
     c.setHitDice("5d10");        // count-prefixed form is not a stored hit die
     EXPECT_EQ(c.getHitDieSides(), 0);

@@ -220,6 +220,24 @@ TEST(SaveFormatTest, RepairsSurviveASaveLoadCycle) {
     EXPECT_EQ(again.getProficiency(), 2);
 }
 
+// Saves written before "d0" was rejected at the prompt may still hold it;
+// it is repaired on load like any other invalid hit die.
+TEST(SaveFormatTest, RepairsZeroSidedHitDie) {
+    TempCharDir d("zerohitdie");
+    std::string text = kLegacyGood;
+    const std::string good = "d10 10\n";
+    text.replace(text.find(good), good.size(), "d0 10\n");
+    d.writeCharacterTxt(text);
+
+    std::vector<std::string> repairs;
+    const Character c = load(d, &repairs);
+
+    EXPECT_EQ(c.getHitDice(), "d8");
+    EXPECT_EQ(c.getHitDieSides(), 8);
+    ASSERT_EQ(repairs.size(), 1u);
+    EXPECT_NE(repairs[0].find("d0"), std::string::npos);
+}
+
 // A null repairs pointer must still repair, just without reporting.
 TEST(SaveFormatTest, RepairWorksWithoutARepairsVector) {
     TempCharDir d("norepairvec");

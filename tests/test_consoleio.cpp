@@ -53,6 +53,19 @@ TEST(ValidateTest, IsHitDiceAcceptsOnlyDFollowedByDigits) {
     EXPECT_FALSE(Validate::isHitDice(""));
 }
 
+// A die needs at least one side: "d0" used to pass the format check and
+// could reach the short-rest roll. Sides are capped at 100, like the roller.
+TEST(ValidateTest, IsHitDiceRejectsZeroPaddedAndOversizedDice) {
+    EXPECT_TRUE(Validate::isHitDice("d1"));
+    EXPECT_TRUE(Validate::isHitDice("d100"));
+    EXPECT_FALSE(Validate::isHitDice("d0"));
+    EXPECT_FALSE(Validate::isHitDice("d00"));
+    EXPECT_FALSE(Validate::isHitDice("d08"));
+    EXPECT_FALSE(Validate::isHitDice("d101"));
+    EXPECT_FALSE(Validate::isHitDice("d1000"));
+    EXPECT_FALSE(Validate::isHitDice("d99999999999"));  // would overflow std::stoi
+}
+
 // ---------------------------------------------------------------------------
 // readInt / readMenuChoice
 // ---------------------------------------------------------------------------
@@ -142,7 +155,7 @@ TEST(ConsoleIOTest, ReadNameAcceptsDigitsWhereTextWouldNot) {
 }
 
 TEST(ConsoleIOTest, ReadHitDiceRejectsBadFormatThenAccepts) {
-    Harness h("0\nD12\nd10\n");
+    Harness h("0\nD12\nd0\nd10\n");
     EXPECT_EQ(h.io.readHitDice("Hit dice: "), "d10");
     EXPECT_NE(h.written().find("dN"), std::string::npos);
 }
