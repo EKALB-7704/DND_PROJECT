@@ -10,7 +10,7 @@ A command-line D&D character management system written in C++. Tracks everything
 - **Character features**: Skills (18 standard skills with proficiency/expertise), saving throw proficiencies, feats, racial traits, and language tracking
 - **Wallet**: Five-denomination currency tracking (cp, sp, ep, gp, pp)
 - **Dice roller**: Generic dN rolling plus D20 advantage/disadvantage modes
-- **Checks and saves**: Roll skill checks, saving throws, ability checks and initiative straight from the character editor, with the sheet's modifiers applied
+- **Checks, saves and attacks**: Roll skill checks, saving throws, ability checks, initiative and weapon attacks (with damage) straight from the character editor, with the sheet's modifiers applied
 - **Persistence**: Each character is saved to a per-character directory of structured text files; characters survive across sessions
 - **Exception handling**: Custom exception hierarchy; the program exits cleanly with error code 1 on unrecoverable errors
 
@@ -147,18 +147,27 @@ own top-level "Rest" entry, since a rest restores HP and hit dice as well as
 spell slots.
 
 The dice roller is now wired into the character sheet: editor option 8,
-"Roll checks and saves", rolls skill checks, saving throws, ability checks
-and initiative with advantage/disadvantage, adding the modifier the sheet
+"Roll checks, saves and attacks", rolls skill checks, saving throws, ability
+checks and initiative with advantage/disadvantage, adding the modifier the sheet
 already computes (ability modifier plus proficiency or expertise). A short
 rest now rolls the hit dice it spends (each die plus the CON modifier, never
 below 0) instead of asking for a total, and every roll in the program --
 editor, rests and the main-menu dice roller -- comes from one shared roller.
 
+Weapon attacks pick a weapon from the inventory and roll to hit with the
+weapon's ability (STR for melee, DEX for ranged, the higher for finesse) plus
+proficiency if the player says they are proficient. On a hit, the weapon's
+damage dice (`1d8`, `2d6+1`, `d4`, or a flat `1`) are rolled with the same
+ability modifier; a natural 20 doubles the dice and a natural 1 misses.
+Damage the parser cannot read, like a versatile `1d8/1d10`, is typed in.
+
 Planned features, once the above lands:
 
 - Dungeon Master mode: manage both player characters and NPCs within a campaign
-- Wire the dice roller into attack and damage rolls (checks, saves and
-  initiative are done)
+- Track weapon proficiencies (Simple / Martial) on the sheet, so attacks
+  stop asking "Proficient with X?" each time
+- Versatile weapons: store the one- and two-handed damage separately and
+  ask which grip, instead of falling back to a typed-in total
 - Short rest: offer "roll for me" or "enter my own roll" when spending hit
   dice, so players rolling physical dice at the table can type in their total
   (the rest currently always rolls for you)
