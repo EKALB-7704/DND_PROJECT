@@ -149,7 +149,10 @@ spell slots.
 The dice roller is now wired into the character sheet: editor option 8,
 "Roll checks and saves", rolls skill checks, saving throws, ability checks
 and initiative with advantage/disadvantage, adding the modifier the sheet
-already computes (ability modifier plus proficiency or expertise).
+already computes (ability modifier plus proficiency or expertise). A short
+rest now rolls the hit dice it spends (each die plus the CON modifier, never
+below 0) instead of asking for a total, and every roll in the program --
+editor, rests and the main-menu dice roller -- comes from one shared roller.
 
 Planned features, once the above lands:
 
