@@ -22,20 +22,20 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "-I${workspaceFolder}/include",
-                "${workspaceFolder}/src/*.cpp",
+                "-Iinclude",
+                "src/*.cpp",
                 "-o",
-                "${workspaceFolder}/DND_PROJECT"
+                "DND_PROJECT"
             ],
             "windows": {
                 "command": "c:\\Program Files\\CodeBlocks\\MinGW\\bin\\g++.exe",
                 "args": [
                     "-fdiagnostics-color=always",
                     "-g",
-                    "-I${workspaceFolder}/include",
-                    "${workspaceFolder}/src/*.cpp",
+                    "-Iinclude",
+                    "src/*.cpp",
                     "-o",
-                    "${workspaceFolder}\\DND_PROJECT.exe"
+                    "DND_PROJECT.exe"
                 ]
             },
             "options": {
@@ -56,8 +56,10 @@
             "command": "konsole",
             "args": [
                 "--hold",
+                "--workdir",
+                "${workspaceFolder}",
                 "-e",
-                "${workspaceFolder}/DND_PROJECT"
+                "./DND_PROJECT"
             ],
             "windows": {
                 "command": "cmd",
