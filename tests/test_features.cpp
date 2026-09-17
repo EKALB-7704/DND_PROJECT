@@ -74,3 +74,30 @@ TEST(CharacterFeaturesTest, SaveLoadPreservesFeatsTraitsAndSkills) {
 
     std::remove(path);
 }
+
+TEST(CharacterFeaturesTest, MartialProficiencyCoversMartialWeaponsOnly) {
+    CharacterFeatures cf;
+    cf.setWeaponCategoryProficiency("Martial", true);
+    EXPECT_TRUE(cf.isProficientWithWeapon("martial", "Longsword"));  // case is ignored
+    EXPECT_FALSE(cf.isProficientWithWeapon("Simple", "Dagger"));
+
+}
+
+TEST(CharacterFeaturesTest, NamedWeaponProficiencyMatchesWholeNameOnly)
+{
+    CharacterFeatures cf;
+    cf.addWeaponProficiency("Crossbow");
+    EXPECT_TRUE(cf.isProficientWithWeapon("Martial", "crossbow"));
+    EXPECT_FALSE(cf.isProficientWithWeapon("Martial", "Hand crossbow"));
+}
+
+TEST(CharacterFeaturesTest, WeaponProficiencyListSkipsDuplicatesAndBadIndexes ) {
+    CharacterFeatures cf;
+    cf.addWeaponProficiency("Rapier");
+    cf.addWeaponProficiency("rapier");
+    EXPECT_EQ(cf.getWeaponProficiencies().size(), 1u);
+    EXPECT_FALSE(cf.removeWeaponProficiency(0));
+    EXPECT_FALSE(cf.removeWeaponProficiency(2));
+    EXPECT_TRUE(cf.removeWeaponProficiency(1));
+    EXPECT_TRUE(cf.getWeaponProficiencies().empty());
+}

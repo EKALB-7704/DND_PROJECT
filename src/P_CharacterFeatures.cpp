@@ -280,6 +280,64 @@ int CharacterFeatures::getSkillModifier(const std::string& skillName,
     return modifier;
 }
 
+void CharacterFeatures::setWeaponCategoryProficiency(const std::string& category, bool proficient)
+{
+    const std::string key = toLowerCopy(category);
+    if (key == "simple")
+        simpleWeaponProficiency = proficient;
+    else if (key == "martial")
+        martialWeaponProficiency = proficient;
+}
+
+bool CharacterFeatures::getWeaponCategoryProficiency(const std::string& category) const
+{
+    const std::string key = toLowerCopy(category);
+    if (key == "simple") return simpleWeaponProficiency;
+    if (key == "martial") return martialWeaponProficiency;
+    return false;
+}
+
+void CharacterFeatures::addWeaponProficiency(const std::string& weaponName)
+{
+    if (weaponName.empty()) return;
+
+    // Skip duplicates, ignoring case, so "longsword" after "Longsword" isnt listed twice 
+
+    for (const auto& existing : weaponProficiencies)
+    {
+        if (toLowerCopy(existing) == toLowerCopy(weaponName)) return;
+    }
+    weaponProficiencies.push_back(weaponName);
+}
+
+bool CharacterFeatures::removeWeaponProficiency(int index)
+{
+    if (index < 1 || index > static_cast<int>(weaponProficiencies.size()))
+        return false;
+
+    weaponProficiencies.erase(weaponProficiencies.begin() + index - 1);
+    return true;
+}
+
+const std::vector<std::string>& CharacterFeatures::getWeaponProficiencies() const
+{
+    return weaponProficiencies;
+}
+
+// Proficient if the weapon's whole category is covered, or the weapon is named.
+bool CharacterFeatures::isProficientWithWeapon(const std::string& category,
+                                               const std::string& weaponName) const
+{
+    if (getWeaponCategoryProficiency(category)) return true;
+
+    const std::string name = toLowerCopy(weaponName);
+    for (const auto& proficiency : weaponProficiencies)
+    {
+        if (toLowerCopy(proficiency) == name) return true;
+    }
+    return false;
+}
+
 void CharacterFeatures::displayFeats() const
 {
     if (feats.empty())

@@ -28,6 +28,9 @@ private:
     std::vector<std::string> feats;
     std::vector<std::string> racialTraits;
     std::vector<std::string> languages;
+    bool simpleWeaponProficiency = false;
+    bool martialWeaponProficiency = false;
+    std::vector<std::string> weaponProficiencies; // individual weapons, e.g. "Longsword"
     // Fixed 5e skill list with editable proficiency/expertise state per skill.
     std::vector<SkillEntry> skills;
 
@@ -61,6 +64,17 @@ public:
                          int strength, int dexterity, int constitution,
                          int intelligence, int wisdom, int charisma,
                          int proficiencyBonus) const;
+
+
+    void setWeaponCategoryProficiency(const std::string& category, bool proficient); // "Simple/Martial"
+    bool getWeaponCategoryProficiency(const std::string& category) const;
+    void addWeaponProficiency(const std::string& weaponName);
+    bool removeWeaponProficiency(int index);
+    const std::vector<std::string>& getWeaponProficiencies() const;
+
+
+    // True if the category or the weapons name is covered
+    bool isProficientWithWeapon(const std::string& category, const std::string& weaponName) const;
 
     bool setSaveProficiency(const std::string& ability, bool proficient);
     bool getSaveProficiency(const std::string& ability) const;

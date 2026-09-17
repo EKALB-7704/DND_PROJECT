@@ -537,6 +537,11 @@ int Character::getWeaponAbilityModifier(const Weapon& weapon) const
     return strMod;
 }
 
+bool Character::isProficientWith(const Weapon& weapon) const
+{
+    return features.isProficientWithWeapon(weapon.getWeaponCategory(), weapon.getName());
+}
+
 int Character::getSaveModifier(const std::string& ability) const
 {
     return features.getSaveModifier(ability,

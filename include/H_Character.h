@@ -167,6 +167,7 @@ public:
     // ranged weapons, STR for melee, and the higher of the two for finesse.
     // Proficiency is not included; it applies to the attack roll only.
     int getWeaponAbilityModifier(const Weapon& weapon) const;
+    bool isProficientWith(const Weapon& weapon) const;
 
     void setStats(int new_AS, int ability_to_change);
 
