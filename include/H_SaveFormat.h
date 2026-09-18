@@ -30,6 +30,8 @@ constexpr const char* kSpellBookTag  = "DNDSPELLS";
 // on the value returned by readHeader rather than reinterpreting old offsets.
 constexpr int kVersion = 1;
 
+// features.txt version 2 adds weapon proficiencies after the languages.
+constexpr int kFeaturesVersion = 2;
 // Sanity ceiling for any "how many records follow" field. A corrupt count used
 // to be trusted, so a damaged file could spin the reader over stale data.
 constexpr int kMaxRecords = 100000;
