@@ -101,3 +101,60 @@ TEST(CharacterFeaturesTest, WeaponProficiencyListSkipsDuplicatesAndBadIndexes ) 
     EXPECT_TRUE(cf.removeWeaponProficiency(1));
     EXPECT_TRUE(cf.getWeaponProficiencies().empty());
 }
+
+TEST(CharacterFeaturesTest, SaveLoadPreservesWeaponProficiencies) {
+    const char* path = "dnd_test_weapon_profs.tmp";
+    std::remove(path);
+
+    {
+        CharacterFeatures cf;
+        cf.addLanguage("Elvish");
+        cf.setWeaponCategoryProficiency("Simple", true);
+        cf.addWeaponProficiency("Longsword");
+        cf.addWeaponProficiency("Hand crossbow");
+
+        std::ofstream out(path);
+        ASSERT_TRUE(out.is_open());
+        cf.save(out);
+    }
+
+    {
+        CharacterFeatures cf;
+        std::ifstream in(path);
+        ASSERT_TRUE(in.is_open());
+        cf.load(in);
+
+        EXPECT_TRUE(cf.getWeaponCategoryProficiency("Simple"));
+        EXPECT_FALSE(cf.getWeaponCategoryProficiency("Martial"));
+        ASSERT_EQ(cf.getWeaponProficiencies().size(), 2u);
+        EXPECT_EQ(cf.getWeaponProficiencies()[0], "Longsword");
+        EXPECT_EQ(cf.getWeaponProficiencies()[1], "Hand crossbow");
+        ASSERT_EQ(cf.getLanguages().size(), 1u);
+    }
+
+    std::remove(path);
+}
+
+// A version 1 file has no weapon section; loading one must not keep
+// proficiencies left over from whatever the object held before.
+TEST(CharacterFeaturesTest, VersionOneFileLoadsWithNoWeaponProficiencies) {
+    const char* path = "dnd_test_features_v1.tmp";
+    {
+        std::ofstream out(path);
+        out << "#DNDFEATS 1\n0\n0\n0\n";
+    }
+
+    CharacterFeatures cf;
+    cf.setWeaponCategoryProficiency("Martial", true);
+    cf.addWeaponProficiency("Rapier");
+
+    std::ifstream in(path);
+    ASSERT_TRUE(in.is_open());
+    cf.load(in);
+
+    EXPECT_FALSE(cf.getWeaponCategoryProficiency("Martial"));
+    EXPECT_TRUE(cf.getWeaponProficiencies().empty());
+
+    in.close();
+    std::remove(path);
+}

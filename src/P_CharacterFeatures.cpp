@@ -420,8 +420,7 @@ void CharacterFeatures::save(std::ofstream& file) const
     for (const auto& lang : languages)
         file << lang << "\n";
 
-    //version 2: category flags on one line, then the individually named weapon
-
+    // Version 2: category flags on one line, then the individually named weapons.
     file << (simpleWeaponProficiency ? 1 : 0) << " "
          << (martialWeaponProficiency ? 1 : 0) << "\n";
     file << weaponProficiencies.size() << "\n";
@@ -436,8 +435,10 @@ void CharacterFeatures::load(std::ifstream& file)
     racialTraits.clear();
     simpleWeaponProficiency = false;
     martialWeaponProficiency = false;
+    weaponProficiencies.clear();
 
-    SaveFormat::readHeader(file, SaveFormat::kFeaturesTag, "features.txt");
+    const int version = SaveFormat::readHeader(file, SaveFormat::kFeaturesTag, "features.txt",
+                                               SaveFormat::kFeaturesVersion);
 
     std::string line;
 
@@ -510,6 +511,23 @@ void CharacterFeatures::load(std::ifstream& file)
                 throw LoadError("features.txt ended mid-way through the language list");
             addLanguage(line);
         }
+    }
+
+    // Version 1 files predate weapon proficiencies; they load with none.
+    if (version < 2) return;
+
+    std::vector<int> flags;
+    if (!SaveFormat::readLine(file, line) || !SaveFormat::parseInts(line, 2, flags))
+        throw LoadError("unreadable weapon proficiency flags in features.txt");
+    simpleWeaponProficiency = (flags[0] != 0);
+    martialWeaponProficiency = (flags[1] != 0);
+
+    const int weaponCount = SaveFormat::readCount(file, "features.txt (weapon proficiencies)");
+    for (int i = 0; i < weaponCount; i++)
+    {
+        if (!SaveFormat::readLine(file, line))
+            throw LoadError("features.txt ended mid-way through the weapon proficiency list");
+        addWeaponProficiency(line);
     }
 }
 
