@@ -1,12 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 
-# Point CMake at the MinGW compiler on Windows.
-# Must be set BEFORE the project() call.
-if(WIN32)
-    set(CMAKE_CXX_COMPILER "C:/Program Files/CodeBlocks/MinGW/bin/g++.exe")
-    set(CMAKE_C_COMPILER   "C:/Program Files/CodeBlocks/MinGW/bin/gcc.exe")
-endif()
-# On Linux CMake finds GCC automatically — no paths needed
+# No compiler is hardcoded here. CMake uses whatever compiler is on the PATH,
+# or the one chosen by a preset (CMakePresets.json) or -DCMAKE_CXX_COMPILER.
 
 project(DND_PROJECT CXX)
 
@@ -49,9 +44,14 @@ set(LIB_SOURCES
 add_library(dnd_lib STATIC ${LIB_SOURCES})
 target_include_directories(dnd_lib PUBLIC include)
 
-# MinGW GCC 8.x ships filesystem as a separate library; GCC 9+ includes it automatically.
-if(WIN32)
+# GCC 8.x ships std::filesystem as a separate library; GCC 9.1+ includes it automatically.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1)
     target_link_libraries(dnd_lib PUBLIC stdc++fs)
+endif()
+
+# gcov instrumentation is a GCC/Clang feature; MSVC has no equivalent flags.
+if(ENABLE_COVERAGE AND MSVC)
+    message(FATAL_ERROR "ENABLE_COVERAGE needs GCC or Clang, not MSVC")
 endif()
 
 if(ENABLE_COVERAGE)
@@ -62,6 +62,11 @@ endif()
 # Main game executable
 add_executable(DND_PROJECT src/P_main.cpp)
 target_link_libraries(DND_PROJECT PRIVATE dnd_lib)
+
+# Statically link the MinGW runtime so the exe runs without MinGW DLLs on the PATH
+if(MINGW)
+    target_link_options(DND_PROJECT PRIVATE -static)
+endif()
 
 # Required for CTest to discover and register tests
 enable_testing()

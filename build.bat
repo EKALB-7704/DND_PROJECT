@@ -1,12 +1,24 @@
 @echo off
+rem Windows quick build: configures and builds with the "mingw" CMake preset,
+rem then runs the game from the project root so data\ is found.
+rem Set MINGW_BIN to use a MinGW other than the CodeBlocks one.
+
+if not defined MINGW_BIN set "MINGW_BIN=C:\Program Files\CodeBlocks\MinGW\bin"
+if exist "%MINGW_BIN%\g++.exe" set "PATH=%MINGW_BIN%;%PATH%"
+
+where g++ >nul 2>nul || (
+    echo g++ not found. Add MinGW's bin folder to PATH or set MINGW_BIN.
+    pause
+    exit /b 1
+)
+
 echo Building DND_PROJECT...
-
-"c:\Program Files\CodeBlocks\MinGW\bin\g++.exe" -fdiagnostics-color=always -g -I./include src/P_main.cpp src/P_Character.cpp src/P_CharacterManager.cpp src/P_Inventory.cpp src/P_Item.cpp src/P_Weapon.cpp src/P_Armor.cpp src/P_Gear.cpp src/P_spells.cpp src/P_SpellBook.cpp src/P_SpellSlots.cpp src/P_Wallet.cpp -static -o DND_PROJECT.exe
-
-if %errorlevel% == 0 (
-    echo Build successful! Running program...
-    DND_PROJECT.exe
-) else (
+cmake --preset mingw && cmake --build --preset mingw --target DND_PROJECT
+if errorlevel 1 (
     echo Build failed.
     pause
+    exit /b 1
 )
+
+echo Build successful! Running program...
+build\DND_PROJECT.exe

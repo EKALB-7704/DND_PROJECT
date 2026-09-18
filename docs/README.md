@@ -19,8 +19,8 @@ A command-line D&D character management system written in C++. Tracks everything
 | Component | Technology |
 |-----------|-----------|
 | Language | C++17 |
-| Build system | CMake 3.18+ |
-| Compiler | GCC / MinGW |
+| Build system | CMake 3.21+ (presets) |
+| Compiler | GCC 8+ / Clang / MinGW |
 | Test framework | Google Test 1.14.0 |
 | Platform | Windows, Linux |
 
@@ -39,33 +39,33 @@ DND_PROJECT/
 │   └── characters/    # Per-character save directories
 ├── docs/              # Additional documentation
 ├── CMakeLists.txt     # Top-level CMake configuration
-└── build.bat          # Windows quick-build script
+├── CMakePresets.json  # debug / release / coverage / mingw configurations
+└── build.bat          # Windows quick-build script (wraps the mingw preset)
 ```
 
 ## Building
 
-### CMake (recommended)
+Requires CMake 3.21+ and a C++17 compiler (GCC 8+, Clang, or MinGW). No
+compiler path is hardcoded: CMake uses the compiler on your `PATH`, or pass
+`-DCMAKE_CXX_COMPILER=...` to pick another.
+
+### CMake presets (recommended)
 
 ```bash
-cmake -B build -S .
-cmake --build build
+cmake --preset debug          # configure into build/
+cmake --build --preset debug  # build the game and the tests
+ctest --preset debug          # run the tests
 ```
 
-### Run tests
+| Preset | Build directory | Notes |
+|--------|-----------------|-------|
+| `debug` | `build/` | Debug symbols; exports `compile_commands.json` for IntelliSense |
+| `release` | `build/release/` | Optimised build |
+| `coverage` | `build/coverage/` | gcov instrumentation (GCC); `cmake --build --preset coverage` writes an HTML report via gcovr |
+| `mingw` | `build/` | Windows only; MinGW Makefiles with `g++` and `mingw32-make` from the `PATH` |
 
-```bash
-ctest --test-dir build
-```
-
-### Code coverage (optional)
-
-```bash
-cmake -B build -S . -DENABLE_COVERAGE=ON
-cmake --build build
-cmake --build build --target coverage
-```
-
-This generates an HTML coverage report via gcovr.
+MinGW builds link the runtime statically, so the `.exe` runs without MinGW
+DLLs alongside it.
 
 ### Windows quick build
 
@@ -73,7 +73,19 @@ This generates an HTML coverage report via gcovr.
 build.bat
 ```
 
+Builds with the `mingw` preset and runs the game. It adds
+`C:\Program Files\CodeBlocks\MinGW\bin` to the `PATH` if it exists; set
+`MINGW_BIN` to use a different MinGW.
+
+### VS Code
+
+The tasks in `.vscode/` call the presets: **CMake build** (default build task),
+**CMake test**, and **Run in Konsole** (Linux) / a new `cmd` window (Windows).
+The debugger launches `build/DND_PROJECT` and finds `gdb` on the `PATH`.
+
 ## Running
+
+Run from the project root so the program finds `data/`:
 
 ```bash
 ./build/DND_PROJECT

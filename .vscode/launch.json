@@ -4,17 +4,15 @@
             "name": "C/C++: g++ debug (integrated terminal)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/DND_PROJECT",
+            "program": "${workspaceFolder}/build/DND_PROJECT",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
             "windows": {
-                "program": "${workspaceFolder}\\DND_PROJECT.exe",
-                "miDebuggerPath": "c:\\Program Files\\CodeBlocks\\MinGW\\bin\\gdb.exe",
+                "program": "${workspaceFolder}\\build\\DND_PROJECT.exe",
                 "externalConsole": true
             },
             "setupCommands": [
@@ -29,14 +27,14 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "C/C++: g++ build active file"
+            "preLaunchTask": "CMake build"
         },
         {
             "name": "Run in Konsole (Linux only)",
             "type": "node-terminal",
             "request": "launch",
-            "command": "konsole --hold --workdir '${workspaceFolder}' -e ./DND_PROJECT",
-            "preLaunchTask": "C/C++: g++ build active file"
+            "command": "konsole --hold --workdir '${workspaceFolder}' -e ./build/DND_PROJECT",
+            "preLaunchTask": "CMake build"
         }
     ],
     "version": "2.0.0"

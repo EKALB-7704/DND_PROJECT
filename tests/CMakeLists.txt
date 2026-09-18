@@ -35,7 +35,7 @@ target_link_libraries(dnd_tests
 )
 
 # Statically link MinGW runtime on Windows so the exe runs without DLLs on the PATH
-if(WIN32)
+if(MINGW)
     if(ENABLE_COVERAGE)
         # -static must come first; -lgcov explicitly provides the coverage runtime
         target_link_options(dnd_tests PRIVATE -static -fprofile-arcs -lgcov)
@@ -47,11 +47,9 @@ endif()
 if(ENABLE_COVERAGE)
     target_compile_options(dnd_tests PRIVATE -fprofile-arcs -ftest-coverage)
 
-    if(WIN32)
-        set(GCOV_EXECUTABLE "C:/Program Files/CodeBlocks/MinGW/bin/gcov.exe")
-    else()
-        set(GCOV_EXECUTABLE "gcov")
-    endif()
+    # gcov must match the compiler version, so look beside the compiler first
+    get_filename_component(COMPILER_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    find_program(GCOV_EXECUTABLE gcov HINTS "${COMPILER_DIR}")
 
     find_program(GCOVR_EXECUTABLE gcovr)
 
