@@ -85,11 +85,19 @@ The debugger launches `build/DND_PROJECT` and finds `gdb` on the `PATH`.
 
 ## Running
 
-Run from the project root so the program finds `data/`:
-
 ```bash
 ./build/DND_PROJECT
 ```
+
+The program can be started from any folder. It uses the first of these as its
+data folder (the one holding `SpellBook.txt` and `characters/`), and prints the
+choice at startup:
+
+1. `--data-dir <path>` on the command line
+2. the `DND_DATA_DIR` environment variable
+3. a `data/` folder beside the executable or up to two levels above it
+   (so `build/DND_PROJECT` and `build/release/DND_PROJECT` find the project's `data/`)
+4. `data/` in the current folder
 
 The program presents an interactive menu for creating, loading, editing, and saving characters.
 

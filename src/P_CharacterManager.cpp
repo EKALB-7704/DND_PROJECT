@@ -5,6 +5,7 @@
 #include <cctype>
 #include <limits>
 #include <filesystem>
+#include <utility>
 
 // Main file for managing character utilities
 
@@ -16,7 +17,8 @@
 //discretion. This simplifies the numeric based data management, and means we dont ever have to use floats or doubles (yay)
 
 
-CharacterManager::CharacterManager(ConsoleIO& io) : io(io) {}
+CharacterManager::CharacterManager(ConsoleIO& io, std::filesystem::path dataDir)
+    : io(io), dataDir(std::move(dataDir)) {}
 
 void CharacterManager::createCharacter() {
 
@@ -160,7 +162,7 @@ void CharacterManager::editCharacter() {
 // Save/Load functions
 void CharacterManager::saveCharacter(const Character& c) const {
     namespace fs = std::filesystem;
-    fs::path dir = fs::path("data") / "characters" / c.getName();
+    fs::path dir = dataDir / "characters" / c.getName();
     try {
         fs::create_directories(dir);
         c.saveToDirectory(dir.string());
@@ -183,7 +185,7 @@ void CharacterManager::saveAll() const {
 
 void CharacterManager::loadAll() {
     namespace fs = std::filesystem;
-    fs::path base = fs::path("data") / "characters";
+    fs::path base = dataDir / "characters";
 
     if (!fs::exists(base) || !fs::is_directory(base)) {
         io.os() << "No saved characters found.\n";
@@ -228,7 +230,7 @@ void CharacterManager::loadAll() {
 std::vector<std::string> CharacterManager::listCharacterNames() const {
     namespace fs = std::filesystem;
     std::vector<std::string> names;
-    fs::path base = fs::path("data") / "characters";
+    fs::path base = dataDir / "characters";
 
     if (!fs::exists(base) || !fs::is_directory(base))
         return names;

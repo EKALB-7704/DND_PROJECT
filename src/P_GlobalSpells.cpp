@@ -23,7 +23,7 @@ void CharacterManager::manageGlobalSpells()
             // Level 0 is cantrips.
             const int level = io.readInt("Enter spell level (0-9): ", 0, 9);
 
-            SpellBook global = ManagerHelpers::loadGlobalSpellBook();
+            SpellBook global = ManagerHelpers::loadGlobalSpellBook(dataDir);
             auto spells = global.getSpellsByLevel(level);
 
             if (spells.empty())
@@ -55,14 +55,14 @@ void CharacterManager::manageGlobalSpells()
             const std::string save     = io.readName("Saving throw: ");
             const std::string desc     = io.readName("Description: ");
 
-            SpellBook global = ManagerHelpers::loadGlobalSpellBook();
+            SpellBook global = ManagerHelpers::loadGlobalSpellBook(dataDir);
             global.addSpell(Spell(name, type, effect, level, time, range, comp, duration, save, desc));
-            ManagerHelpers::saveGlobalSpellBook(global);
+            ManagerHelpers::saveGlobalSpellBook(global, dataDir);
             io.os() << "Spell added to global spellbook!\n";
         }
         else if (choice == 3)
         {
-            SpellBook global = ManagerHelpers::loadGlobalSpellBook();
+            SpellBook global = ManagerHelpers::loadGlobalSpellBook(dataDir);
             auto spells = global.getAllSpells();
 
             if (spells.empty())
@@ -116,7 +116,7 @@ void CharacterManager::manageGlobalSpells()
                     {
                         if (global.updateSpell(static_cast<size_t>(spellNum - 1), spellToEdit))
                         {
-                            ManagerHelpers::saveGlobalSpellBook(global);
+                            ManagerHelpers::saveGlobalSpellBook(global, dataDir);
                             io.os() << "Spell updated.\n";
                         }
                         break;

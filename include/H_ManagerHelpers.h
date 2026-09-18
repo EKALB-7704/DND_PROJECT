@@ -1,6 +1,7 @@
 #ifndef MANAGER_HELPERS_H
 #define MANAGER_HELPERS_H
 
+#include <filesystem>
 #include <string>
 
 #include "H_Character.h"
@@ -27,10 +28,9 @@ std::string signedValue(int value);
 // Prompts for normal/advantage/disadvantage. Re-prompts until valid.
 D20Mode promptD20Mode(ConsoleIO& io);
 
-// The global spell registry, stored at data/SpellBook.txt and loaded by
-// relative path -- so the program must be run from the repository root.
-SpellBook loadGlobalSpellBook();
-void saveGlobalSpellBook(const SpellBook& spellbook);
+// The global spell registry, stored as SpellBook.txt in the data folder.
+SpellBook loadGlobalSpellBook(const std::filesystem::path& dataDir);
+void saveGlobalSpellBook(const SpellBook& spellbook, const std::filesystem::path& dataDir);
 
 } // namespace ManagerHelpers
 

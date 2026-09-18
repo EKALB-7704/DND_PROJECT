@@ -42,16 +42,16 @@ D20Mode promptD20Mode(ConsoleIO& io)
     }
 }
 
-SpellBook loadGlobalSpellBook()
+SpellBook loadGlobalSpellBook(const std::filesystem::path& dataDir)
 {
     SpellBook global;
-    global.loadSpellBook("data/SpellBook.txt");
+    global.loadSpellBook((dataDir / "SpellBook.txt").string());
     return global;
 }
 
-void saveGlobalSpellBook(const SpellBook& spellbook)
+void saveGlobalSpellBook(const SpellBook& spellbook, const std::filesystem::path& dataDir)
 {
-    spellbook.saveSpellBook("data/SpellBook.txt");
+    spellbook.saveSpellBook((dataDir / "SpellBook.txt").string());
 }
 
 } // namespace ManagerHelpers

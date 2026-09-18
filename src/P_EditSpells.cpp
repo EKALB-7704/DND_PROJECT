@@ -22,7 +22,7 @@ int spellChoice;
 
         if (spellChoice == 1)
         {
-            SpellBook global = ManagerHelpers::loadGlobalSpellBook();
+            SpellBook global = ManagerHelpers::loadGlobalSpellBook(dataDir);
             const int level = io.readInt("Enter spell level (0-9): ", 0, 9);
 
             auto spells = global.getSpellsByLevel(level);
@@ -43,7 +43,7 @@ int spellChoice;
         }
         else if (spellChoice == 2)
         {
-            SpellBook global = ManagerHelpers::loadGlobalSpellBook();
+            SpellBook global = ManagerHelpers::loadGlobalSpellBook(dataDir);
 
             const int level = io.readInt("Enter spell level to filter (0-9): ", 0, 9);
 

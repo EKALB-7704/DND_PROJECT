@@ -1,20 +1,53 @@
+#include <cstdlib>
+#include <filesystem>
 #include <iostream>
+#include <string>
 #include "H_CharacterManager.h"
+#include "H_DataPaths.h"
 #include "H_CharacterFeatures.h"
 #include "H_ConsoleIO.h"
 #include "H_SpellBook.h"
 #include "H_Colours.h"
 #include "H_DndExceptions.h"
 
-int main() {
+static void printUsage(const char* program) {
+  std::cout << "Usage: " << program << " [--data-dir <path>]\n"
+            << "  --data-dir <path>  folder holding SpellBook.txt and characters/\n"
+            << "                     (or set DND_DATA_DIR)\n";
+}
+
+int main(int argc, char* argv[]) {
+  std::filesystem::path dataDirArg;
+  for (int i = 1; i < argc; ++i) {
+    const std::string arg = argv[i];
+    if (arg == "--data-dir" && i + 1 < argc) {
+      dataDirArg = argv[++i];
+    } else if (arg == "-h" || arg == "--help") {
+      printUsage(argv[0]);
+      return 0;
+    } else {
+      std::cerr << "Unknown argument: " << arg << "\n";
+      printUsage(argv[0]);
+      return 2;
+    }
+  }
+
   // Single console I/O layer, shared by every menu. Reads are validated and
   // re-prompted here rather than at each `std::cin >>` site.
   ConsoleIO io;
 
   try {
 
+    // Found from the executable's location, so the program no longer has to
+    // be started from the project root.
+    const char* envDataDir = std::getenv("DND_DATA_DIR");
+    const std::filesystem::path dataDir = DataPaths::resolveDataDir(
+        dataDirArg, envDataDir ? envDataDir : "",
+        DataPaths::executableDir(), std::filesystem::current_path());
+    std::cout << "Data folder: " << dataDir.string() << "\n";
+
     // Initialize character and colour manager objects
-    CharacterManager manager(io);
+    CharacterManager manager(io, dataDir);
     ColourManager col_manager;
 
     int choice;

@@ -1,6 +1,7 @@
 #ifndef CHARACTER_MANAGER_H
 #define CHARACTER_MANAGER_H
 
+#include <filesystem>
 #include <vector>
 #include "H_Character.h"
 #include "H_ConsoleIO.h"
@@ -18,6 +19,9 @@ private:
     DiceRoller dice;
 
     std::vector<Character> characters;
+
+    // Folder holding SpellBook.txt and characters/ (see DataPaths).
+    std::filesystem::path dataDir;
 
     // Per-section handlers for the character editor. editCharacter() shows the
     // menu and dispatches; each of these owns one section. Private because they
@@ -42,7 +46,7 @@ private:
 
 public:
 
-    explicit CharacterManager(ConsoleIO& io);
+    explicit CharacterManager(ConsoleIO& io, std::filesystem::path dataDir = "data");
 
     // Character management
     void createCharacter();
