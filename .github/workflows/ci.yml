@@ -82,3 +82,32 @@ jobs:
         with:
           name: DND_PROJECT-${{ matrix.artifact }}
           path: ${{ matrix.exe }}
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Building the image also compiles and runs the full test suite.
+      - name: Build image
+        run: docker build -t dnd_project .
+
+      # With stdin closed the game must start, report the image's data folder,
+      # and exit cleanly.
+      - name: Smoke test
+        run: |
+          output=$(docker run --rm -i dnd_project < /dev/null)
+          echo "$output"
+          echo "$output" | grep -qx "Data folder: /app/data"
+
+      # A mounted host folder must be the one used, and writable when the
+      # container runs as the host user (the runner's uid isn't 1000).
+      - name: Smoke test with mounted data
+        run: |
+          user="$(id -u):$(id -g)"
+          docker compose run --rm -T --user "$user" dnd < /dev/null | tee run.log
+          grep -qx "Data folder: /app/data" run.log
+          docker compose run --rm -T --user "$user" --entrypoint sh dnd \
+            -c 'mkdir -p /app/data/characters && touch /app/data/characters/.write_test'
+          rm data/characters/.write_test

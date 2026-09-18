@@ -40,6 +40,8 @@ DND_PROJECT/
 ├── docs/              # Additional documentation
 ├── CMakeLists.txt     # Top-level CMake configuration
 ├── CMakePresets.json  # debug / release / coverage / mingw configurations
+├── Dockerfile         # pinned Linux build + test, and a runtime image
+├── compose.yaml       # docker compose run --rm dnd
 └── build.bat          # Windows quick-build script (wraps the mingw preset)
 ```
 
@@ -70,9 +72,32 @@ DLLs alongside it.
 ### Continuous integration
 
 `.github/workflows/ci.yml` builds and tests every push on Linux (GCC and
-Clang), macOS (AppleClang) and Windows (MSVC and MinGW). It then checks that the game
+Clang), macOS (AppleClang) and Windows (MSVC and MinGW), and builds the
+Docker image. It then checks that the game
 finds `data/` when started outside the project root, and uploads each
 platform's executable as a downloadable artifact on the run's page.
+
+### Docker
+
+The `Dockerfile` builds in a fixed Ubuntu 24.04 environment and runs the full
+test suite during the build, so the image builds only if every test passes.
+Nothing but Docker is needed on the host.
+
+```bash
+docker build -t dnd_project .     # build and test
+docker compose run --rm dnd       # play; characters save to ./data
+```
+
+The container runs as uid 1000. On Linux, if your own uid differs (`id -u`),
+run as yourself so saves in `data/` are writable and owned by you:
+
+```bash
+docker compose run --rm --user "$(id -u):$(id -g)" dnd
+```
+
+Without the compose file: `docker run --rm -it -v "$PWD/data:/app/data" dnd_project`.
+This runs the Linux build. On Windows and macOS, Docker runs it inside a
+Linux VM, so use the CI executables for a native build.
 
 ### Windows quick build
 

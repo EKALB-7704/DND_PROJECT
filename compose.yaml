@@ -1,0 +1,10 @@
+# Play in a container, saving characters to this project's data/ folder:
+#   docker compose run --rm dnd
+services:
+  dnd:
+    build: .
+    image: dnd_project
+    stdin_open: true  # the game is an interactive menu
+    tty: true
+    volumes:
+      - ./data:/app/data

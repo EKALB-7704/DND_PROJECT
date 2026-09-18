@@ -1,0 +1,10 @@
+# Keep the build context to sources: local builds and binaries would be stale,
+# and personal saves stay out of the image (mount data/ at run time instead).
+.git
+.github
+.vscode
+build
+data/characters
+DND_PROJECT
+*.exe
+docs
