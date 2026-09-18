@@ -393,7 +393,7 @@ void CharacterFeatures::displaySkills(int strength, int dexterity, int constitut
 void CharacterFeatures::save(std::ofstream& file) const
 {
     // Save the two free-text lists first, then each skill's current rank.
-    SaveFormat::writeHeader(file, SaveFormat::kFeaturesTag);
+    SaveFormat::writeHeader(file, SaveFormat::kFeaturesTag, SaveFormat::kFeaturesVersion);
     file << feats.size() << "\n";
     for (const auto& feat : feats)
     {
@@ -419,6 +419,14 @@ void CharacterFeatures::save(std::ofstream& file) const
     file << languages.size() << "\n";
     for (const auto& lang : languages)
         file << lang << "\n";
+
+    //version 2: category flags on one line, then the individually named weapon
+
+    file << (simpleWeaponProficiency ? 1 : 0) << " "
+         << (martialWeaponProficiency ? 1 : 0) << "\n";
+    file << weaponProficiencies.size() << "\n";
+    for (const auto& weapon : weaponProficiencies)
+        file << weapon << "\n";
 }
 
 // Load all saved feature data back into the built-in feature tables.
@@ -426,6 +434,8 @@ void CharacterFeatures::load(std::ifstream& file)
 {
     feats.clear();
     racialTraits.clear();
+    simpleWeaponProficiency = false;
+    martialWeaponProficiency = false;
 
     SaveFormat::readHeader(file, SaveFormat::kFeaturesTag, "features.txt");
 
