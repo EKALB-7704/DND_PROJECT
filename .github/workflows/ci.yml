@@ -1,0 +1,84 @@
+# Builds and tests on every OS/compiler the project claims to support, so a
+# change that only works on one machine fails here instead of on someone else's.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # one platform failing shouldn't hide the others' results
+      matrix:
+        include:
+          - name: Linux GCC
+            artifact: linux-gcc
+            os: ubuntu-latest
+            preset: debug
+            cmake_args: -DCMAKE_CXX_COMPILER=g++
+            exe: build/DND_PROJECT
+          - name: Linux Clang
+            artifact: linux-clang
+            os: ubuntu-latest
+            preset: debug
+            cmake_args: -DCMAKE_CXX_COMPILER=clang++
+            exe: build/DND_PROJECT
+          - name: macOS AppleClang
+            artifact: macos
+            os: macos-latest
+            preset: debug
+            exe: build/DND_PROJECT
+          - name: Windows MSVC
+            artifact: windows-msvc
+            os: windows-latest
+            preset: debug
+            exe: build/Debug/DND_PROJECT.exe
+          - name: Windows MinGW
+            artifact: windows-mingw
+            os: windows-latest
+            preset: mingw
+            exe: build/DND_PROJECT.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The runner image ships MinGW-w64 here; put it first so its g++ and
+      # mingw32-make win over any other gcc on the PATH.
+      - name: Put MinGW on the PATH
+        if: matrix.preset == 'mingw'
+        shell: pwsh
+        run: Add-Content $env:GITHUB_PATH "C:\mingw64\bin"
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }} ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} --parallel 4
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }}
+
+      # Proves the executable finds data/ when started from somewhere other
+      # than the project root. Run from its own folder (which has no data/)
+      # with stdin closed, it must exit cleanly and report a folder that
+      # really holds SpellBook.txt, not the ./data fallback.
+      - name: Smoke test
+        shell: bash
+        run: |
+          exe="$PWD/${{ matrix.exe }}"
+          cd "$(dirname "$exe")"
+          output=$("$exe" < /dev/null)
+          echo "$output"
+          dir=$(echo "$output" | sed -n 's/^Data folder: //p' | tr -d '\r')
+          if command -v cygpath > /dev/null; then dir=$(cygpath -u "$dir"); fi
+          test -f "$dir/SpellBook.txt"
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: DND_PROJECT-${{ matrix.artifact }}
+          path: ${{ matrix.exe }}

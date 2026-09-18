@@ -22,7 +22,7 @@ A command-line D&D character management system written in C++. Tracks everything
 | Build system | CMake 3.21+ (presets) |
 | Compiler | GCC 8+ / Clang / MinGW |
 | Test framework | Google Test 1.14.0 |
-| Platform | Windows, Linux |
+| Platform | Windows, Linux, macOS |
 
 ## Project Structure
 
@@ -66,6 +66,13 @@ ctest --preset debug          # run the tests
 
 MinGW builds link the runtime statically, so the `.exe` runs without MinGW
 DLLs alongside it.
+
+### Continuous integration
+
+`.github/workflows/ci.yml` builds and tests every push on Linux (GCC and
+Clang), macOS (AppleClang) and Windows (MSVC and MinGW). It then checks that the game
+finds `data/` when started outside the project root, and uploads each
+platform's executable as a downloadable artifact on the run's page.
 
 ### Windows quick build
 

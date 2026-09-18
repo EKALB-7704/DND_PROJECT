@@ -5,7 +5,7 @@
         {
             "name": "debug",
             "displayName": "Debug",
-            "description": "Debug build with the default compiler on the PATH",
+            "description": "Debug build with the platform's default compiler (MSVC on Windows)",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -46,13 +46,13 @@
         }
     ],
     "buildPresets": [
-        { "name": "debug", "configurePreset": "debug" },
-        { "name": "release", "configurePreset": "release" },
-        { "name": "coverage", "configurePreset": "coverage", "targets": ["coverage"] },
-        { "name": "mingw", "configurePreset": "mingw" }
+        { "name": "debug", "configurePreset": "debug", "configuration": "Debug" },
+        { "name": "release", "configurePreset": "release", "configuration": "Release" },
+        { "name": "coverage", "configurePreset": "coverage", "configuration": "Debug", "targets": ["coverage"] },
+        { "name": "mingw", "configurePreset": "mingw", "configuration": "Debug" }
     ],
     "testPresets": [
-        { "name": "debug", "configurePreset": "debug", "output": { "outputOnFailure": true } },
-        { "name": "mingw", "configurePreset": "mingw", "output": { "outputOnFailure": true } }
+        { "name": "debug", "configurePreset": "debug", "configuration": "Debug", "output": { "outputOnFailure": true } },
+        { "name": "mingw", "configurePreset": "mingw", "configuration": "Debug", "output": { "outputOnFailure": true } }
     ]
 }

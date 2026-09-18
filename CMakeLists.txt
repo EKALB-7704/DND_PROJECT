@@ -10,6 +10,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ENABLE_COVERAGE "Build with gcov coverage instrumentation" OFF)
 
+# MSVC reads source files in the system code page unless told otherwise.
+if(MSVC)
+    add_compile_options(/utf-8)
+endif()
+
 # All game logic sources — excludes main so tests can link to the same library
 set(LIB_SOURCES
     src/P_Character.cpp
