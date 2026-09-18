@@ -1,6 +1,13 @@
 #include <gtest/gtest.h>
+#include <type_traits>
 #include "H_Character.h"
 #include "H_Weapon.h"
+
+// std::vector<Character> must move on reallocation. If Character ever becomes
+// copyable again, MSVC copies instead (its std::map move isn't noexcept) and
+// fails trying to copy the Inventory's unique_ptrs.
+static_assert(!std::is_copy_constructible_v<Character>, "Character must stay move-only");
+static_assert(std::is_move_constructible_v<Character>, "Character must be movable");
 
 // Helper: builds a minimal valid Character for use across tests
 static Character makeCharacter(
